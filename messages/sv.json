@@ -1,0 +1,101 @@
+{
+  "nav": {
+    "home": "Hem",
+    "tips": "Tips",
+    "standings": "Ställning",
+    "competitions": "Tävlingar",
+    "admin": "Admin",
+    "logout": "Logga ut",
+    "login": "Logga in"
+  },
+  "tips": {
+    "groupStage": "Gruppspel",
+    "advancement": "Avancemang",
+    "knockout": "Slutspel",
+    "tournament": "Finallag & Vinnare"
+  },
+  "prediction": {
+    "home": "Hemmalag vinner",
+    "draw": "Oavgjort",
+    "away": "Bortalag vinner",
+    "homeShort": "1",
+    "drawShort": "X",
+    "awayShort": "2"
+  },
+  "match": {
+    "vs": "mot",
+    "group": "Grupp {group}",
+    "deadline": "Stänger: {date}",
+    "deadlinePassed": "Tips stängda",
+    "result": "Resultat",
+    "noResult": "Ej spelad"
+  },
+  "competitions": {
+    "title": "Tävlingar",
+    "join": "Gå med",
+    "joined": "Gick med!",
+    "member": "Medlem",
+    "participants": "deltagare",
+    "viewStandings": "Se ställning",
+    "noCompetitions": "Inga aktiva tävlingar ännu",
+    "privateLabel": "Privat",
+    "enterCode": "Ange kod",
+    "wrongCode": "Fel kod",
+    "tipsVisible": "Tips synliga",
+    "tipsHidden": "Tips dolda",
+    "simulation": "Simulering",
+    "hiddenUntilLock": "Tips är dolda för övriga tills låsdatum passerat"
+  },
+  "standings": {
+    "title": "Topplista",
+    "rank": "Plats",
+    "player": "Spelare",
+    "total": "Totalt",
+    "matchPoints": "Matchresultat",
+    "advancementPoints": "Avancemang",
+    "tournamentPoints": "Final/Vinnare",
+    "myTips": "Mina tips",
+    "allTips": "Alla tips",
+    "hiddenUntilLock": "Tips visas när låsdatum passerat"
+  },
+  "auth": {
+    "login": "Logga in",
+    "email": "E-postadress",
+    "password": "Lösenord",
+    "magicLink": "Skicka inloggningslänk",
+    "magicLinkSent": "En inloggningslänk har skickats till {email}",
+    "orPassword": "Eller logga in med lösenord",
+    "invalidCredentials": "Felaktig e-post eller lösenord",
+    "checkEmail": "Kolla din inkorg",
+    "checkEmailDesc": "Vi har skickat en länk till {email}. Klicka på länken för att logga in."
+  },
+  "admin": {
+    "title": "Admin",
+    "results": "Mata in resultat",
+    "odds": "Hantera odds",
+    "competitions": "Tävlingar",
+    "simulate": "Simulering",
+    "users": "Användare",
+    "inviteUser": "Bjud in användare",
+    "setResult": "Sätt resultat",
+    "homeScore": "Hemma",
+    "awayScore": "Borta",
+    "save": "Spara",
+    "saved": "Sparat!",
+    "oddsSource": "Källa",
+    "oddsValue": "Odds",
+    "addSource": "Lägg till källa"
+  },
+  "common": {
+    "loading": "Laddar...",
+    "error": "Något gick fel",
+    "save": "Spara",
+    "cancel": "Avbryt",
+    "confirm": "Bekräfta",
+    "points": "poäng",
+    "pts": "p",
+    "deadline_passed": "Stängt",
+    "not_tipped": "Ej tippat",
+    "tipped": "Tippat"
+  }
+}

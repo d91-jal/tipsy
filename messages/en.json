@@ -1,0 +1,101 @@
+{
+  "nav": {
+    "home": "Home",
+    "tips": "Tips",
+    "standings": "Standings",
+    "competitions": "Competitions",
+    "admin": "Admin",
+    "logout": "Log out",
+    "login": "Log in"
+  },
+  "tips": {
+    "groupStage": "Group Stage",
+    "advancement": "Advancement",
+    "knockout": "Knockout",
+    "tournament": "Finalists & Winner"
+  },
+  "prediction": {
+    "home": "Home team wins",
+    "draw": "Draw",
+    "away": "Away team wins",
+    "homeShort": "1",
+    "drawShort": "X",
+    "awayShort": "2"
+  },
+  "match": {
+    "vs": "vs",
+    "group": "Group {group}",
+    "deadline": "Closes: {date}",
+    "deadlinePassed": "Tips closed",
+    "result": "Result",
+    "noResult": "Not played"
+  },
+  "competitions": {
+    "title": "Competitions",
+    "join": "Join",
+    "joined": "Joined!",
+    "member": "Member",
+    "participants": "participants",
+    "viewStandings": "View standings",
+    "noCompetitions": "No active competitions yet",
+    "privateLabel": "Private",
+    "enterCode": "Enter code",
+    "wrongCode": "Wrong code",
+    "tipsVisible": "Tips visible",
+    "tipsHidden": "Tips hidden",
+    "simulation": "Simulation",
+    "hiddenUntilLock": "Tips are hidden from others until the deadline"
+  },
+  "standings": {
+    "title": "Leaderboard",
+    "rank": "Rank",
+    "player": "Player",
+    "total": "Total",
+    "matchPoints": "Match results",
+    "advancementPoints": "Advancement",
+    "tournamentPoints": "Final/Winner",
+    "myTips": "My tips",
+    "allTips": "All tips",
+    "hiddenUntilLock": "Tips are hidden until the deadline has passed"
+  },
+  "auth": {
+    "login": "Log in",
+    "email": "Email address",
+    "password": "Password",
+    "magicLink": "Send login link",
+    "magicLinkSent": "A login link has been sent to {email}",
+    "orPassword": "Or log in with password",
+    "invalidCredentials": "Incorrect email or password",
+    "checkEmail": "Check your inbox",
+    "checkEmailDesc": "We sent a link to {email}. Click the link to log in."
+  },
+  "admin": {
+    "title": "Admin",
+    "results": "Enter results",
+    "odds": "Manage odds",
+    "competitions": "Competitions",
+    "simulate": "Simulate",
+    "users": "Users",
+    "inviteUser": "Invite user",
+    "setResult": "Set result",
+    "homeScore": "Home",
+    "awayScore": "Away",
+    "save": "Save",
+    "saved": "Saved!",
+    "oddsSource": "Source",
+    "oddsValue": "Odds",
+    "addSource": "Add source"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "points": "points",
+    "pts": "pts",
+    "deadline_passed": "Closed",
+    "not_tipped": "No tip",
+    "tipped": "Tipped"
+  }
+}

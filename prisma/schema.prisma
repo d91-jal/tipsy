@@ -1,0 +1,380 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────
+// AUTH (NextAuth v5 compatible)
+// ─────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  name          String?
+  passwordHash  String?
+  role          Role      @default(USER)
+  locale        String    @default("sv")
+  invitedBy     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+
+  matchTips            MatchTip[]
+  groupAdvancementTips GroupAdvancementTip[]
+  tournamentTip        TournamentTip?
+  competitionMembers   CompetitionMember[]
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─────────────────────────────────────────────
+// TOURNAMENT
+// ─────────────────────────────────────────────
+
+model Tournament {
+  id           String   @id @default(cuid())
+  slug         String   @unique // "wc2026"
+  nameSv       String   // "FIFA VM 2026"
+  nameEn       String   // "FIFA World Cup 2026"
+  startDate    DateTime // First match
+  oddsLockDate DateTime // Lock date for group/advancement/finalist/winner tips
+  isActive     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  groups         Group[]
+  matches        Match[]
+  tournamentTips TournamentTip[]
+  actualResult   TournamentActualResult?
+  competitions   Competition[]
+}
+
+// ─────────────────────────────────────────────
+// COMPETITION (pool / league within a tournament)
+// Multiple competitions can run in parallel for
+// the same tournament. Tips are global per user;
+// the competition only defines who competes and
+// controls the leaderboard scope.
+// ─────────────────────────────────────────────
+
+model Competition {
+  id             String    @id @default(cuid())
+  tournamentId   String
+  slug           String    @unique
+  name           String
+  description    String?
+  isPublic       Boolean   @default(true)  // false = invite/access-code only
+  accessCode     String?                   // Required to join if !isPublic
+  simulationMode Boolean   @default(false) // Test mode: fake users + random results
+  simulatedDate  DateTime?                 // Virtual "current date" during simulation
+  createdBy      String                    // userId of admin who created it
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  tournament Tournament         @relation(fields: [tournamentId], references: [id])
+  members    CompetitionMember[]
+}
+
+// Membership: user ↔ competition (many-to-many with extra fields)
+model CompetitionMember {
+  id            String    @id @default(cuid())
+  competitionId String
+  userId        String
+  tipsPublic    Boolean   @default(false) // Show this user's tips before deadline
+  isSimBot      Boolean   @default(false) // Generated fake user for simulation
+  joinedAt      DateTime  @default(now())
+
+  competition Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([competitionId, userId])
+}
+
+// ─────────────────────────────────────────────
+// GROUPS & TEAMS
+// ─────────────────────────────────────────────
+
+model Group {
+  id           String @id @default(cuid())
+  name         String // "A", "B", ..., "L"
+  tournamentId String
+
+  tournament          Tournament            @relation(fields: [tournamentId], references: [id])
+  teams               Team[]
+  matches             Match[]
+  advancementTips     GroupAdvancementTip[]
+  actualAdvancements  GroupActualAdvancement[]
+
+  @@unique([tournamentId, name])
+}
+
+model Team {
+  id       String  @id @default(cuid())
+  nameSv   String
+  nameEn   String
+  fifaCode String  @unique // "SWE", "BRA", etc. (ISO alpha-3)
+  flagUrl  String? // "/flags/SWE.svg" or CDN URL
+  groupId  String
+
+  group Group @relation(fields: [groupId], references: [id])
+
+  homeMatches Match[] @relation("HomeTeam")
+  awayMatches Match[] @relation("AwayTeam")
+
+  firstPlaceTips  GroupAdvancementTip[] @relation("AdvancementFirst")
+  secondPlaceTips GroupAdvancementTip[] @relation("AdvancementSecond")
+
+  finalist1Tips TournamentTip[] @relation("TournamentFinalist1")
+  finalist2Tips TournamentTip[] @relation("TournamentFinalist2")
+  winnerTips    TournamentTip[] @relation("TournamentWinner")
+
+  advancementOdds  AdvancementOdds[]
+  tournamentOdds   TournamentOdds[]
+  actualAdvancements GroupActualAdvancement[]
+  finalist1Results TournamentActualResult[] @relation("ActualFinalist1")
+  finalist2Results TournamentActualResult[] @relation("ActualFinalist2")
+  winnerResults    TournamentActualResult[] @relation("ActualWinner")
+}
+
+// ─────────────────────────────────────────────
+// MATCHES
+// ─────────────────────────────────────────────
+
+model Match {
+  id           String      @id @default(cuid())
+  matchNumber  Int
+  tournamentId String
+  groupId      String?
+  homeTeamId   String?     // Null until knockout bracket is set
+  awayTeamId   String?
+  stage        Stage
+  scheduledAt  DateTime
+  tipDeadline  DateTime    // Computed on seed; 90min-result lock
+  venue        String?
+  homeScore    Int?
+  awayScore    Int?
+  status       MatchStatus @default(SCHEDULED)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  tournament Tournament @relation(fields: [tournamentId], references: [id])
+  group      Group?     @relation(fields: [groupId], references: [id])
+  homeTeam   Team?      @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeam   Team?      @relation("AwayTeam", fields: [awayTeamId], references: [id])
+
+  odds      MatchOdds[]
+  matchTips MatchTip[]
+}
+
+enum Stage {
+  GROUP
+  ROUND_OF_32
+  ROUND_OF_16
+  QUARTER_FINAL
+  SEMI_FINAL
+  THIRD_PLACE
+  FINAL
+}
+
+enum MatchStatus {
+  SCHEDULED
+  LIVE
+  FINISHED
+  CANCELLED
+}
+
+// ─────────────────────────────────────────────
+// ODDS
+// ─────────────────────────────────────────────
+
+// Odds for 1X2 match outcomes
+model MatchOdds {
+  id         String   @id @default(cuid())
+  matchId    String
+  outcome    Outcome
+  avgValue   Decimal  @db.Decimal(6, 2) // Average across sources
+  sources    Json     // [{ name: "Unibet", value: 2.30 }, ...]
+  recordedAt DateTime @default(now())
+  recordedBy String   // userId of admin
+
+  match Match @relation(fields: [matchId], references: [id])
+
+  @@unique([matchId, outcome])
+}
+
+// Odds for a team to advance from their group
+model AdvancementOdds {
+  id         String   @id @default(cuid())
+  teamId     String
+  avgValue   Decimal  @db.Decimal(6, 2)
+  sources    Json
+  recordedAt DateTime @default(now())
+  recordedBy String
+
+  team Team @relation(fields: [teamId], references: [id])
+
+  @@unique([teamId])
+}
+
+// Odds for a team to reach the final / win the tournament
+model TournamentOdds {
+  id         String           @id @default(cuid())
+  teamId     String
+  type       TournamentOddsType
+  avgValue   Decimal          @db.Decimal(6, 2)
+  sources    Json
+  recordedAt DateTime         @default(now())
+  recordedBy String
+
+  team Team @relation(fields: [teamId], references: [id])
+
+  @@unique([teamId, type])
+}
+
+enum TournamentOddsType {
+  REACH_FINAL  // For finalist tips
+  WIN          // For winner tips
+}
+
+enum Outcome {
+  HOME
+  DRAW
+  AWAY
+}
+
+// ─────────────────────────────────────────────
+// TIPS
+// ─────────────────────────────────────────────
+
+// 1X2 tips for group stage and knockout matches
+model MatchTip {
+  id           String   @id @default(cuid())
+  userId       String
+  matchId      String
+  prediction   Outcome
+  submittedAt  DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  pointsEarned Decimal? @db.Decimal(6, 2) // Set after match result
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  match Match @relation(fields: [matchId], references: [id])
+
+  @@unique([userId, matchId])
+}
+
+// Which 2 teams advance from each group
+model GroupAdvancementTip {
+  id            String   @id @default(cuid())
+  userId        String
+  groupId       String
+  firstTeamId   String   // Team predicted to finish 1st
+  secondTeamId  String   // Team predicted to finish 2nd
+  submittedAt   DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  pointsEarned  Decimal? @db.Decimal(6, 2)
+
+  user       User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group      Group @relation(fields: [groupId], references: [id])
+  firstTeam  Team  @relation("AdvancementFirst",  fields: [firstTeamId],  references: [id])
+  secondTeam Team  @relation("AdvancementSecond", fields: [secondTeamId], references: [id])
+
+  @@unique([userId, groupId])
+}
+
+// Who are the finalists and who wins
+model TournamentTip {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  tournamentId String
+  finalist1Id  String
+  finalist2Id  String
+  winnerId     String
+  submittedAt  DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  pointsEarned Decimal? @db.Decimal(6, 2)
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tournament Tournament @relation(fields: [tournamentId], references: [id])
+  finalist1  Team       @relation("TournamentFinalist1", fields: [finalist1Id], references: [id])
+  finalist2  Team       @relation("TournamentFinalist2", fields: [finalist2Id], references: [id])
+  winner     Team       @relation("TournamentWinner",    fields: [winnerId],    references: [id])
+}
+
+// ─────────────────────────────────────────────
+// ACTUAL RESULTS (set by admin)
+// ─────────────────────────────────────────────
+
+// Which teams actually advanced from a group
+model GroupActualAdvancement {
+  id       String @id @default(cuid())
+  groupId  String
+  teamId   String
+  position Int    // 1 or 2
+
+  group Group @relation(fields: [groupId], references: [id])
+  team  Team  @relation(fields: [teamId], references: [id])
+
+  @@unique([groupId, position])
+  @@unique([groupId, teamId])
+}
+
+// Final result of tournament
+model TournamentActualResult {
+  id           String @id @default(cuid())
+  tournamentId String @unique
+  finalist1Id  String
+  finalist2Id  String
+  winnerId     String
+
+  tournament Tournament @relation(fields: [tournamentId], references: [id])
+  finalist1  Team       @relation("ActualFinalist1", fields: [finalist1Id], references: [id])
+  finalist2  Team       @relation("ActualFinalist2", fields: [finalist2Id], references: [id])
+  winner     Team       @relation("ActualWinner",    fields: [winnerId],    references: [id])
+}
