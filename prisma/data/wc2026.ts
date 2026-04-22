@@ -18,117 +18,119 @@ export const GROUPS: Array<{
   {
     name: "A",
     teams: [
-      { nameSv: "Mexiko",      nameEn: "Mexico",       fifaCode: "MEX" },
-      { nameSv: "Kamerun",     nameEn: "Cameroon",     fifaCode: "CMR" },
-      { nameSv: "Kroatien",    nameEn: "Croatia",      fifaCode: "CRO" },
-      { nameSv: "Belgien",     nameEn: "Belgium",      fifaCode: "BEL" },
+      { nameSv: "Mexiko", nameEn: "Mexico", fifaCode: "MEX" },
+      { nameSv: "Sydafrika", nameEn: "South Africa", fifaCode: "RSA" },
+      { nameSv: "Sydkorea", nameEn: "Korea Republic", fifaCode: "KOR" },
+      { nameSv: "Tjeckien", nameEn: "Czech Republic", fifaCode: "CZE" },
     ],
   },
   {
     name: "B",
     teams: [
-      { nameSv: "Argentina",   nameEn: "Argentina",    fifaCode: "ARG" },
-      { nameSv: "Peru",        nameEn: "Peru",         fifaCode: "PER" },
-      { nameSv: "Chile",       nameEn: "Chile",        fifaCode: "CHI" },
-      { nameSv: "Australien",  nameEn: "Australia",    fifaCode: "AUS" },
+      { nameSv: "Kanada", nameEn: "Canada", fifaCode: "CAN" },
+      {
+        nameSv: "Bosnien-Herzegovina",
+        nameEn: "Bosnia-Herzegovina",
+        fifaCode: "BIH",
+      },
+      { nameSv: "Qatar", nameEn: "Qatar", fifaCode: "QAT" },
+      { nameSv: "Schweiz", nameEn: "Switzerland", fifaCode: "SUI" },
     ],
   },
   {
     name: "C",
     teams: [
-      { nameSv: "USA",         nameEn: "United States", fifaCode: "USA" },
-      { nameSv: "Panama",      nameEn: "Panama",        fifaCode: "PAN" },
-      { nameSv: "Algeriet",    nameEn: "Algeria",       fifaCode: "ALG" },
-      { nameSv: "Nigeria",     nameEn: "Nigeria",       fifaCode: "NGA" },
+      { nameSv: "Brasilien", nameEn: "Brazil", fifaCode: "BRA" },
+      { nameSv: "Marocko", nameEn: "Morocco", fifaCode: "MAR" },
+      { nameSv: "Haiti", nameEn: "Haiti", fifaCode: "HAI" },
+      { nameSv: "Skottland", nameEn: "Scotland", fifaCode: "SCO" },
     ],
   },
   {
     name: "D",
     teams: [
-      { nameSv: "Frankrike",   nameEn: "France",       fifaCode: "FRA" },
-      { nameSv: "Uruguay",     nameEn: "Uruguay",      fifaCode: "URU" },
-      { nameSv: "Honduras",    nameEn: "Honduras",     fifaCode: "HON" },
-      { nameSv: "Paraguay",    nameEn: "Paraguay",     fifaCode: "PAR" },
+      { nameSv: "USA", nameEn: "United States", fifaCode: "USA" },
+      { nameSv: "Paraguay", nameEn: "Paraguay", fifaCode: "PAR" },
+      { nameSv: "Australien", nameEn: "Australia", fifaCode: "AUS" },
+      { nameSv: "Turkiet", nameEn: "Türkiye", fifaCode: "TUR" },
     ],
   },
   {
     name: "E",
     teams: [
-      { nameSv: "Spanien",     nameEn: "Spain",        fifaCode: "ESP" },
-      { nameSv: "Serbien",     nameEn: "Serbia",       fifaCode: "SRB" },
-      { nameSv: "Côte d'Ivoire", nameEn: "Ivory Coast", fifaCode: "CIV" },
-      { nameSv: "Vitryssland", nameEn: "Belarus",      fifaCode: "BLR" }, // placeholder
+      { nameSv: "Tyskland", nameEn: "Germany", fifaCode: "GER" },
+      { nameSv: "Curaçao", nameEn: "Curaçao", fifaCode: "CUR" },
+      { nameSv: "Elfenbenskusten", nameEn: "Ivory Coast", fifaCode: "CIV" },
+      { nameSv: "Ecuador", nameEn: "Ecuador", fifaCode: "ECU" },
     ],
   },
   {
     name: "F",
     teams: [
-      { nameSv: "Portugal",    nameEn: "Portugal",     fifaCode: "POR" },
-      { nameSv: "Marockoo",    nameEn: "Morocco",      fifaCode: "MAR" },
-      { nameSv: "Ecuador",     nameEn: "Ecuador",      fifaCode: "ECU" },
-      { nameSv: "Ukraina",     nameEn: "Ukraine",      fifaCode: "UKR" },
+      { nameSv: "Nederländerna", nameEn: "Netherlands", fifaCode: "NED" },
+      { nameSv: "Japan", nameEn: "Japan", fifaCode: "JPN" },
+      { nameSv: "Sverige", nameEn: "Sweden", fifaCode: "SWE" },
+      { nameSv: "Tunisien", nameEn: "Tunisia", fifaCode: "TUN" },
     ],
   },
   {
     name: "G",
     teams: [
-      { nameSv: "Brasilien",   nameEn: "Brazil",       fifaCode: "BRA" },
-      { nameSv: "Colombia",    nameEn: "Colombia",     fifaCode: "COL" },
-      { nameSv: "Sverige",     nameEn: "Sweden",       fifaCode: "SWE" }, // pending qualification
-      { nameSv: "Costa Rica",  nameEn: "Costa Rica",   fifaCode: "CRC" },
+      { nameSv: "Belgien", nameEn: "Belgium", fifaCode: "BEL" },
+      { nameSv: "Egypten", nameEn: "Egypt", fifaCode: "EGY" },
+      { nameSv: "Iran", nameEn: "Iran", fifaCode: "IRI" },
+      { nameSv: "Nya Zeeland", nameEn: "New Zealand", fifaCode: "NZL" },
     ],
   },
   {
     name: "H",
     teams: [
-      { nameSv: "England",     nameEn: "England",      fifaCode: "ENG" },
-      { nameSv: "Mexiko",      nameEn: "Mexico",       fifaCode: "MEX" }, // PLACEHOLDER - needs real data
-      { nameSv: "Senegal",     nameEn: "Senegal",      fifaCode: "SEN" },
-      { nameSv: "Rumänien",    nameEn: "Romania",      fifaCode: "ROU" },
+      { nameSv: "Spanien", nameEn: "Spain", fifaCode: "ESP" },
+      { nameSv: "Kap Verde", nameEn: "Cape Verde", fifaCode: "CPV" },
+      { nameSv: "Saudiarabien", nameEn: "Saudi Arabia", fifaCode: "KSA" },
+      { nameSv: "Uruguay", nameEn: "Uruguay", fifaCode: "URU" },
     ],
   },
   {
     name: "I",
     teams: [
-      { nameSv: "Nederländerna", nameEn: "Netherlands", fifaCode: "NED" },
-      { nameSv: "Egypten",     nameEn: "Egypt",        fifaCode: "EGY" },
-      { nameSv: "Bolivia",     nameEn: "Bolivia",      fifaCode: "BOL" },
-      { nameSv: "Österrike",   nameEn: "Austria",      fifaCode: "AUT" },
+      { nameSv: "Frankrike", nameEn: "France", fifaCode: "FRA" },
+      { nameSv: "Senegal", nameEn: "Senegal", fifaCode: "SEN" },
+      { nameSv: "Irak", nameEn: "Iraq", fifaCode: "IRQ" },
+      { nameSv: "Norge", nameEn: "Norway", fifaCode: "NOR" },
     ],
   },
   {
     name: "J",
     teams: [
-      { nameSv: "Japan",       nameEn: "Japan",        fifaCode: "JPN" },
-      { nameSv: "Tjeckien",    nameEn: "Czech Republic", fifaCode: "CZE" },
-      { nameSv: "DR Kongo",    nameEn: "DR Congo",     fifaCode: "COD" },
-      { nameSv: "Saudiarabien", nameEn: "Saudi Arabia", fifaCode: "KSA" },
+      { nameSv: "Argentina", nameEn: "Argentina", fifaCode: "ARG" },
+      { nameSv: "Algeriet", nameEn: "Algeria", fifaCode: "ALG" },
+      { nameSv: "Österrike", nameEn: "Austria", fifaCode: "AUT" },
+      { nameSv: "Jordanien", nameEn: "Jordan", fifaCode: "JOR" },
     ],
   },
   {
     name: "K",
     teams: [
-      { nameSv: "Kanada",      nameEn: "Canada",       fifaCode: "CAN" },
-      { nameSv: "Turkiet",     nameEn: "Turkey",       fifaCode: "TUR" },
-      { nameSv: "Sydkorea",    nameEn: "South Korea",  fifaCode: "KOR" },
-      { nameSv: "Venezuela",   nameEn: "Venezuela",    fifaCode: "VEN" },
+      { nameSv: "Portugal", nameEn: "Portugal", fifaCode: "POR" },
+      { nameSv: "DR Kongo", nameEn: "DR Congo", fifaCode: "COD" },
+      { nameSv: "Uzbekistan", nameEn: "Uzbekistan", fifaCode: "UZB" },
+      { nameSv: "Colombia", nameEn: "Colombia", fifaCode: "COL" },
     ],
   },
   {
     name: "L",
     teams: [
-      { nameSv: "Tyskland",    nameEn: "Germany",      fifaCode: "GER" },
-      { nameSv: "Ghana",       nameEn: "Ghana",        fifaCode: "GHA" },
-      { nameSv: "Elfenbenskusten", nameEn: "Ivory Coast", fifaCode: "CIV" }, // PLACEHOLDER
-      { nameSv: "Schweiz",     nameEn: "Switzerland",  fifaCode: "SUI" },
+      { nameSv: "England", nameEn: "England", fifaCode: "ENG" },
+      { nameSv: "Kroatien", nameEn: "Croatia", fifaCode: "CRO" },
+      { nameSv: "Ghana", nameEn: "Ghana", fifaCode: "GHA" },
+      { nameSv: "Panama", nameEn: "Panama", fifaCode: "PAN" },
     ],
   },
 ];
 
 // ⚠️  NOTE: Team assignments above are approximate based on available info.
 //     Admin MUST verify against official FIFA draw before going live.
-//     Several slots marked as pending qualification.
-//     CIV appears in two groups — this is a placeholder error to be corrected.
 
 // Group stage match schedule per group (6 matches each, 3 matchdays)
 // Matchday 1: team[0] vs team[1], team[2] vs team[3]
@@ -170,15 +172,15 @@ export const KNOCKOUT_MATCHES = [
   { matchNumber: 95, stage: "ROUND_OF_16", scheduledOffset: 32 },
   { matchNumber: 96, stage: "ROUND_OF_16", scheduledOffset: 32 },
   // Quarter-finals (4 matches)
-  { matchNumber: 97,  stage: "QUARTER_FINAL", scheduledOffset: 36 },
-  { matchNumber: 98,  stage: "QUARTER_FINAL", scheduledOffset: 36 },
-  { matchNumber: 99,  stage: "QUARTER_FINAL", scheduledOffset: 37 },
+  { matchNumber: 97, stage: "QUARTER_FINAL", scheduledOffset: 36 },
+  { matchNumber: 98, stage: "QUARTER_FINAL", scheduledOffset: 36 },
+  { matchNumber: 99, stage: "QUARTER_FINAL", scheduledOffset: 37 },
   { matchNumber: 100, stage: "QUARTER_FINAL", scheduledOffset: 37 },
   // Semi-finals (2 matches)
-  { matchNumber: 101, stage: "SEMI_FINAL",    scheduledOffset: 41 },
-  { matchNumber: 102, stage: "SEMI_FINAL",    scheduledOffset: 42 },
+  { matchNumber: 101, stage: "SEMI_FINAL", scheduledOffset: 41 },
+  { matchNumber: 102, stage: "SEMI_FINAL", scheduledOffset: 42 },
   // Third place
-  { matchNumber: 103, stage: "THIRD_PLACE",   scheduledOffset: 46 },
+  { matchNumber: 103, stage: "THIRD_PLACE", scheduledOffset: 46 },
   // Final
-  { matchNumber: 104, stage: "FINAL",         scheduledOffset: 47 },
+  { matchNumber: 104, stage: "FINAL", scheduledOffset: 47 },
 ] as const;
