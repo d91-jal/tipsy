@@ -1,0 +1,24 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: tipsy-db
+    environment:
+      POSTGRES_USER: tipsy
+      POSTGRES_PASSWORD: localdev
+      POSTGRES_DB: tipsy
+    ports:
+      - "5432:5432"
+    volumes:
+      - tipsy-db-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  mailpit:
+    image: axllent/mailpit
+    container_name: tipsy-mail
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # Web UI
+    restart: unless-stopped
+
+volumes:
+  tipsy-db-data:

@@ -7,7 +7,7 @@ import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { auth } from "@/lib/auth";
 import { Navbar } from "@/components/layout/Navbar";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "@/components/ui";
 import "../../app/globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -19,10 +19,11 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const t = await getTranslations({ locale, namespace: "common" });
   return {
-    title: "VM-Tippning 2026",
-    description: locale === "sv"
-      ? "Tippa FIFA VM 2026 med dina vänner"
-      : "Predict FIFA World Cup 2026 with your friends",
+    title: "Tipsy",
+    description:
+      locale === "sv"
+        ? "Tippa FIFA VM 2026 med dina vänner"
+        : "Predict FIFA World Cup 2026 with your friends",
   };
 }
 
@@ -51,7 +52,7 @@ export default async function LocaleLayout({
               {children}
             </main>
             <footer className="py-4 text-center text-xs text-slate-400">
-              VM-Tippning 2026
+              Tipsy
             </footer>
           </div>
           <Toaster />

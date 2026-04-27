@@ -1,14 +1,12 @@
-// next.config.ts
-import type { NextConfig } from "next";
+// next.config.mjs
 import createNextIntlPlugin from "next-intl/plugin";
 
 const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   images: {
-    remotePatterns: [
-      { protocol: "https", hostname: "**.amazonaws.com" },
-    ],
+    remotePatterns: [{ protocol: "https", hostname: "**.amazonaws.com" }],
   },
 };
 

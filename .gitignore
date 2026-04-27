@@ -29,6 +29,9 @@ Thumbs.db
 # Prisma
 prisma/migrations/dev.db
 
+# Docker
+docker-compose.override.yml
+
 # AWS
 .aws/
 amplify/.config/local-*
