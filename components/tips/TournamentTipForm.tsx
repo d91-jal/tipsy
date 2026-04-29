@@ -1,11 +1,19 @@
 // components/tips/TournamentTipForm.tsx
 "use client";
 
-import { useState, useActionState, useTransition } from "react";
+import { useState, useTransition } from "react";
+import { useFormState as useActionState } from "react-dom";
 import { submitTournamentTip } from "@/lib/actions/tips";
 import type { MatchTipState } from "@/lib/actions/tips";
 import { cn, formatPoints } from "@/lib/utils";
-import { Button, Badge, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
+import {
+  Button,
+  Badge,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui";
 import type { Prisma } from "@prisma/client";
 
 type TeamWithOdds = Prisma.TeamGetPayload<{
@@ -27,7 +35,11 @@ interface TournamentTipFormProps {
 const initialState: MatchTipState = { success: false };
 
 export function TournamentTipForm({
-  tournamentId, teams, existingTip, locked, locale
+  tournamentId,
+  teams,
+  existingTip,
+  locked,
+  locale,
 }: TournamentTipFormProps) {
   const [state, action] = useActionState(submitTournamentTip, initialState);
   const [, startTransition] = useTransition();
@@ -61,19 +73,24 @@ export function TournamentTipForm({
     onChange: (id: string) => void;
     exclude?: string[];
   }) {
-    const available = teams.filter((t) => !exclude?.includes(t.id) || t.id === selected);
+    const available = teams.filter(
+      (t) => !exclude?.includes(t.id) || t.id === selected,
+    );
     return (
       <div className="space-y-2">
         <div className="text-sm font-medium text-slate-600">{label}</div>
         <select
           value={selected}
-          onChange={(e) => { onChange(e.target.value); setSaved(false); }}
+          onChange={(e) => {
+            onChange(e.target.value);
+            setSaved(false);
+          }}
           disabled={locked}
           className={cn(
             "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm",
             "focus:outline-none focus:ring-2 focus:ring-pitch-500",
             "disabled:opacity-50 disabled:cursor-default",
-            selected ? "text-slate-800 font-medium" : "text-slate-400"
+            selected ? "text-slate-800 font-medium" : "text-slate-400",
           )}
         >
           <option value="">
@@ -102,7 +119,10 @@ export function TournamentTipForm({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            🏟️ {locale === "sv" ? "Vilka lag spelar finalen?" : "Which teams play the final?"}
+            🏟️{" "}
+            {locale === "sv"
+              ? "Vilka lag spelar finalen?"
+              : "Which teams play the final?"}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -111,7 +131,8 @@ export function TournamentTipForm({
             selected={finalist1}
             onChange={(id) => {
               setFinalist1(id);
-              if (winner && winner !== id && winner !== finalist2) setWinner("");
+              if (winner && winner !== id && winner !== finalist2)
+                setWinner("");
             }}
             exclude={[finalist2]}
           />
@@ -120,7 +141,8 @@ export function TournamentTipForm({
             selected={finalist2}
             onChange={(id) => {
               setFinalist2(id);
-              if (winner && winner !== finalist1 && winner !== id) setWinner("");
+              if (winner && winner !== finalist1 && winner !== id)
+                setWinner("");
             }}
             exclude={[finalist1]}
           />
@@ -132,19 +154,27 @@ export function TournamentTipForm({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              🥇 {locale === "sv" ? "Vem vinner VM?" : "Who wins the World Cup?"}
+              🥇{" "}
+              {locale === "sv" ? "Vem vinner VM?" : "Who wins the World Cup?"}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex gap-3">
               {[finalist1Team, finalist2Team].filter(Boolean).map((team) => {
                 if (!team) return null;
-                const winOdds = team.tournamentOdds.find((o) => o.type === "WIN");
+                const winOdds = team.tournamentOdds.find(
+                  (o) => o.type === "WIN",
+                );
                 const isSelected = winner === team.id;
                 return (
                   <button
                     key={team.id}
-                    onClick={() => { if (!locked) { setWinner(team.id); setSaved(false); } }}
+                    onClick={() => {
+                      if (!locked) {
+                        setWinner(team.id);
+                        setSaved(false);
+                      }
+                    }}
                     disabled={locked}
                     className={cn(
                       "flex-1 flex flex-col items-center gap-1 p-4 rounded-xl border text-sm transition-all",
@@ -153,7 +183,7 @@ export function TournamentTipForm({
                         ? "border-gold-500 bg-yellow-50 text-yellow-700 font-semibold"
                         : locked
                           ? "border-slate-100 text-slate-300"
-                          : "border-slate-200 hover:border-pitch-300 cursor-pointer"
+                          : "border-slate-200 hover:border-pitch-300 cursor-pointer",
                     )}
                   >
                     <span className="text-2xl">🏆</span>
@@ -180,8 +210,12 @@ export function TournamentTipForm({
           variant={saved ? "secondary" : "default"}
         >
           {saved
-            ? (locale === "sv" ? "✓ Sparat" : "✓ Saved")
-            : (locale === "sv" ? "Spara tips" : "Save tip")}
+            ? locale === "sv"
+              ? "✓ Sparat"
+              : "✓ Saved"
+            : locale === "sv"
+              ? "Spara tips"
+              : "Save tip"}
         </Button>
       )}
 

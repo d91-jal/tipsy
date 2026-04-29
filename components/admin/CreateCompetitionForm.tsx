@@ -1,7 +1,8 @@
 // components/admin/CreateCompetitionForm.tsx
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState } from "react";
+import { useFormState as useActionState } from "react-dom";
 import { createCompetition } from "@/lib/actions/competitions";
 import type { CreateCompetitionState } from "@/lib/actions/competitions";
 import { Button, Input, Label } from "@/components/ui";
@@ -30,10 +31,15 @@ export function CreateCompetitionForm({ tournaments, locale }: Props) {
   }
 
   return (
-    <form action={action} className="rounded-xl border border-slate-200 bg-white p-4 space-y-4">
+    <form
+      action={action}
+      className="rounded-xl border border-slate-200 bg-white p-4 space-y-4"
+    >
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-1">
-          <Label htmlFor="cc-tournament">{isSv ? "Turnering" : "Tournament"}</Label>
+          <Label htmlFor="cc-tournament">
+            {isSv ? "Turnering" : "Tournament"}
+          </Label>
           <select
             id="cc-tournament"
             name="tournamentSlug"
@@ -42,19 +48,32 @@ export function CreateCompetitionForm({ tournaments, locale }: Props) {
                        focus:outline-none focus:ring-2 focus:ring-pitch-500"
           >
             {tournaments.map((t) => (
-              <option key={t.slug} value={t.slug}>{t.name}</option>
+              <option key={t.slug} value={t.slug}>
+                {t.name}
+              </option>
             ))}
           </select>
         </div>
 
         <div className="space-y-1">
           <Label htmlFor="cc-name">{isSv ? "Namn" : "Name"} *</Label>
-          <Input id="cc-name" name="name" placeholder={isSv ? "Min grupp" : "My group"} required />
+          <Input
+            id="cc-name"
+            name="name"
+            placeholder={isSv ? "Min grupp" : "My group"}
+            required
+          />
         </div>
 
         <div className="space-y-1 sm:col-span-2">
-          <Label htmlFor="cc-desc">{isSv ? "Beskrivning (valfritt)" : "Description (optional)"}</Label>
-          <Input id="cc-desc" name="description" placeholder={isSv ? "Kort beskrivning..." : "Short description..."} />
+          <Label htmlFor="cc-desc">
+            {isSv ? "Beskrivning (valfritt)" : "Description (optional)"}
+          </Label>
+          <Input
+            id="cc-desc"
+            name="description"
+            placeholder={isSv ? "Kort beskrivning..." : "Short description..."}
+          />
         </div>
       </div>
 
@@ -85,7 +104,11 @@ export function CreateCompetitionForm({ tournaments, locale }: Props) {
       </div>
 
       {/* Hidden isPublic field */}
-      <input type="hidden" name="isPublic" value={isPrivate ? "false" : "true"} />
+      <input
+        type="hidden"
+        name="isPublic"
+        value={isPrivate ? "false" : "true"}
+      />
 
       {isPrivate && (
         <div className="space-y-1">
@@ -101,15 +124,14 @@ export function CreateCompetitionForm({ tournaments, locale }: Props) {
 
       {isSim && (
         <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-xs text-amber-700">
-          🤖 {isSv
+          🤖{" "}
+          {isSv
             ? "Simuleringsläge: du kan generera testanvändare och steppa fram tid dag för dag. Matchar i denna tävling skrivs över med simulerade resultat."
             : "Simulation mode: you can generate test users and advance time day by day. Matches in this competition will be overwritten with simulated results."}
         </div>
       )}
 
-      {state.error && (
-        <p className="text-sm text-red-600">{state.error}</p>
-      )}
+      {state.error && <p className="text-sm text-red-600">{state.error}</p>}
 
       <Button type="submit">
         {isSv ? "Skapa tävling" : "Create competition"}

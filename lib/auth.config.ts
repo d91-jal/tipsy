@@ -1,6 +1,6 @@
 // lib/auth.config.ts
-// Edge-compatible auth configuration — no Node.js-only modules.
-// Used by middleware only. Full providers live in lib/auth.ts.
+// Edge-compatible auth configuration — no Node.js-only modules, no adapter.
+// Used by middleware only. Full config with providers lives in lib/auth.ts.
 
 import type { NextAuthConfig } from "next-auth";
 

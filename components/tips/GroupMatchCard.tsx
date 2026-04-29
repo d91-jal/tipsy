@@ -1,7 +1,8 @@
 // components/tips/GroupMatchCard.tsx
 "use client";
 
-import { useActionState, useOptimistic, useTransition } from "react";
+import { useOptimistic, useTransition } from "react";
+import { useFormState as useActionState } from "react-dom";
 import { useTranslations, useLocale } from "next-intl";
 import { submitMatchTip } from "@/lib/actions/tips";
 import type { MatchTipState } from "@/lib/actions/tips";
@@ -28,10 +29,16 @@ interface GroupMatchCardProps {
 
 const initialState: MatchTipState = { success: false };
 
-export function GroupMatchCard({ match, existingTip, locale }: GroupMatchCardProps) {
+export function GroupMatchCard({
+  match,
+  existingTip,
+  locale,
+}: GroupMatchCardProps) {
   const t = useTranslations();
   const [state, action] = useActionState(submitMatchTip, initialState);
-  const [optimisticTip, setOptimisticTip] = useOptimistic(existingTip?.prediction ?? null);
+  const [optimisticTip, setOptimisticTip] = useOptimistic(
+    existingTip?.prediction ?? null,
+  );
   const [, startTransition] = useTransition();
 
   const deadline = new Date(match.tipDeadline);
@@ -52,11 +59,12 @@ export function GroupMatchCard({ match, existingTip, locale }: GroupMatchCardPro
         : "DRAW"
     : null;
 
-  const buttons: { outcome: Outcome; labelKey: string; shortLabel: string }[] = [
-    { outcome: "HOME", labelKey: "prediction.home", shortLabel: "1" },
-    { outcome: "DRAW", labelKey: "prediction.draw", shortLabel: "X" },
-    { outcome: "AWAY", labelKey: "prediction.away", shortLabel: "2" },
-  ];
+  const buttons: { outcome: Outcome; labelKey: string; shortLabel: string }[] =
+    [
+      { outcome: "HOME", labelKey: "prediction.home", shortLabel: "1" },
+      { outcome: "DRAW", labelKey: "prediction.draw", shortLabel: "X" },
+      { outcome: "AWAY", labelKey: "prediction.away", shortLabel: "2" },
+    ];
 
   function handleSelect(outcome: Outcome) {
     if (locked || finished) return;
@@ -70,10 +78,14 @@ export function GroupMatchCard({ match, existingTip, locale }: GroupMatchCardPro
   }
 
   return (
-    <div className={cn(
-      "rounded-xl border bg-white p-4 transition-all",
-      finished ? "border-slate-100 bg-slate-50/50" : "border-slate-200 hover:border-slate-300"
-    )}>
+    <div
+      className={cn(
+        "rounded-xl border bg-white p-4 transition-all",
+        finished
+          ? "border-slate-100 bg-slate-50/50"
+          : "border-slate-200 hover:border-slate-300",
+      )}
+    >
       {/* Match header */}
       <div className="flex items-center justify-between mb-3">
         <span className="text-xs text-slate-400">
@@ -90,7 +102,12 @@ export function GroupMatchCard({ match, existingTip, locale }: GroupMatchCardPro
           )}
           {optimisticTip && !finished && (
             <Badge variant="default" className="bg-pitch-50 text-pitch-700">
-              ✓ {optimisticTip === "HOME" ? "1" : optimisticTip === "DRAW" ? "X" : "2"}
+              ✓{" "}
+              {optimisticTip === "HOME"
+                ? "1"
+                : optimisticTip === "DRAW"
+                  ? "X"
+                  : "2"}
             </Badge>
           )}
         </div>
@@ -121,16 +138,28 @@ export function GroupMatchCard({ match, existingTip, locale }: GroupMatchCardPro
                 className={cn(
                   "flex flex-col items-center justify-center w-14 h-12 rounded-lg border text-sm font-bold transition-all",
                   "disabled:cursor-default",
-                  isSelected && !finished && "border-pitch-500 bg-pitch-50 text-pitch-700",
-                  !isSelected && !finished && !locked && "border-slate-200 text-slate-600 hover:border-pitch-300 hover:bg-pitch-50/50 cursor-pointer",
-                  !isSelected && (finished || locked) && "border-slate-100 text-slate-300",
-                  isCorrect && finished && "border-green-500 bg-green-50 text-green-700",
-                  isWrong && "border-red-300 bg-red-50 text-red-500 line-through",
+                  isSelected &&
+                    !finished &&
+                    "border-pitch-500 bg-pitch-50 text-pitch-700",
+                  !isSelected &&
+                    !finished &&
+                    !locked &&
+                    "border-slate-200 text-slate-600 hover:border-pitch-300 hover:bg-pitch-50/50 cursor-pointer",
+                  !isSelected &&
+                    (finished || locked) &&
+                    "border-slate-100 text-slate-300",
+                  isCorrect &&
+                    finished &&
+                    "border-green-500 bg-green-50 text-green-700",
+                  isWrong &&
+                    "border-red-300 bg-red-50 text-red-500 line-through",
                 )}
               >
                 <span>{shortLabel}</span>
                 {odds !== null && (
-                  <span className="text-[10px] font-normal text-slate-400">{odds.toFixed(2)}</span>
+                  <span className="text-[10px] font-normal text-slate-400">
+                    {odds.toFixed(2)}
+                  </span>
                 )}
               </button>
             );
@@ -148,10 +177,14 @@ export function GroupMatchCard({ match, existingTip, locale }: GroupMatchCardPro
       {/* Points earned */}
       {finished && match.matchTips?.[0]?.pointsEarned != null && (
         <div className="mt-2 text-right">
-          <span className={cn(
-            "text-xs font-semibold",
-            Number(match.matchTips[0].pointsEarned) > 0 ? "text-pitch-600" : "text-slate-400"
-          )}>
+          <span
+            className={cn(
+              "text-xs font-semibold",
+              Number(match.matchTips[0].pointsEarned) > 0
+                ? "text-pitch-600"
+                : "text-slate-400",
+            )}
+          >
             {Number(match.matchTips[0].pointsEarned) > 0
               ? `+${formatPoints(Number(match.matchTips[0].pointsEarned))} p`
               : "0 p"}

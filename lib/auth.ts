@@ -18,7 +18,7 @@ const loginSchema = z.object({
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
   adapter: PrismaAdapter(prisma),
-  session: { strategy: "database" },
+  session: { strategy: "jwt" },
 
   providers: [
     Nodemailer({
@@ -76,16 +76,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
 
-  // Override callbacks — session hydration with role/locale from DB
   callbacks: {
-    async session({ session, user }) {
+    async jwt({ token, user }) {
+      // On sign in, persist id and role into the token
+      if (user) {
+        token.id = user.id;
+        token.role = (user as any).role ?? "USER";
+      }
+      return token;
+    },
+    async session({ session, token }) {
       if (session.user) {
-        session.user.id = user.id;
+        session.user.id = token.id as string;
+        session.user.role = token.role as string;
+        // Fetch locale from DB (lightweight, cached by Next.js)
         const dbUser = await prisma.user.findUnique({
-          where: { id: user.id },
-          select: { role: true, locale: true },
+          where: { id: token.id as string },
+          select: { locale: true },
         });
-        session.user.role = dbUser?.role ?? "USER";
         session.user.locale = dbUser?.locale ?? "sv";
       }
       return session;

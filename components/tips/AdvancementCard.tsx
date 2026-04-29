@@ -1,7 +1,8 @@
 // components/tips/AdvancementCard.tsx
 "use client";
 
-import { useState, useActionState, useTransition } from "react";
+import { useState, useTransition } from "react";
+import { useFormState as useActionState } from "react-dom";
 import { submitGroupAdvancementTip } from "@/lib/actions/tips";
 import type { MatchTipState } from "@/lib/actions/tips";
 import { cn, formatPoints } from "@/lib/utils";
@@ -24,12 +25,20 @@ interface AdvancementCardProps {
 
 const initialState: MatchTipState = { success: false };
 
-export function AdvancementCard({ group, existingTip, locked, locale }: AdvancementCardProps) {
-  const [state, action] = useActionState(submitGroupAdvancementTip, initialState);
+export function AdvancementCard({
+  group,
+  existingTip,
+  locked,
+  locale,
+}: AdvancementCardProps) {
+  const [state, action] = useActionState(
+    submitGroupAdvancementTip,
+    initialState,
+  );
   const [, startTransition] = useTransition();
 
   const [selected, setSelected] = useState<string[]>(
-    existingTip ? [existingTip.firstTeamId, existingTip.secondTeamId] : []
+    existingTip ? [existingTip.firstTeamId, existingTip.secondTeamId] : [],
   );
   const [saved, setSaved] = useState(!!existingTip);
   const [saving, setSaving] = useState(false);
@@ -72,10 +81,14 @@ export function AdvancementCard({ group, existingTip, locked, locale }: Advancem
           {locale === "sv" ? `Grupp ${group.name}` : `Group ${group.name}`}
         </h3>
         {saved && (
-          <Badge variant="success">✓ {locale === "sv" ? "Sparat" : "Saved"}</Badge>
+          <Badge variant="success">
+            ✓ {locale === "sv" ? "Sparat" : "Saved"}
+          </Badge>
         )}
         {state.error && (
-          <Badge variant="error">{state.error === "DEADLINE_PASSED" ? "🔒" : "!"}</Badge>
+          <Badge variant="error">
+            {state.error === "DEADLINE_PASSED" ? "🔒" : "!"}
+          </Badge>
         )}
       </div>
 
@@ -84,7 +97,9 @@ export function AdvancementCard({ group, existingTip, locked, locale }: Advancem
         {group.teams.map((team) => {
           const isSelected = selected.includes(team.id);
           const rank = selected.indexOf(team.id) + 1;
-          const odds = team.advancementOdds ? Number(team.advancementOdds.avgValue) : null;
+          const odds = team.advancementOdds
+            ? Number(team.advancementOdds.avgValue)
+            : null;
 
           return (
             <button
@@ -98,7 +113,7 @@ export function AdvancementCard({ group, existingTip, locked, locale }: Advancem
                   ? "border-pitch-500 bg-pitch-50 text-pitch-700 font-medium"
                   : locked
                     ? "border-slate-100 text-slate-300"
-                    : "border-slate-200 text-slate-600 hover:border-pitch-300 hover:bg-pitch-50/50 cursor-pointer"
+                    : "border-slate-200 text-slate-600 hover:border-pitch-300 hover:bg-pitch-50/50 cursor-pointer",
               )}
             >
               <div className="flex items-center gap-2">
@@ -110,7 +125,9 @@ export function AdvancementCard({ group, existingTip, locked, locale }: Advancem
                 <span>{labelTeam(team)}</span>
               </div>
               {odds !== null && (
-                <span className="text-xs text-slate-400">{odds.toFixed(2)}</span>
+                <span className="text-xs text-slate-400">
+                  {odds.toFixed(2)}
+                </span>
               )}
             </button>
           );
@@ -128,10 +145,16 @@ export function AdvancementCard({ group, existingTip, locked, locale }: Advancem
           variant={saved ? "secondary" : "default"}
         >
           {saved
-            ? (locale === "sv" ? "✓ Sparat" : "✓ Saved")
+            ? locale === "sv"
+              ? "✓ Sparat"
+              : "✓ Saved"
             : selected.length < 2
-              ? (locale === "sv" ? `Välj ${2 - selected.length} lag till` : `Select ${2 - selected.length} more`)
-              : (locale === "sv" ? "Spara tips" : "Save tip")}
+              ? locale === "sv"
+                ? `Välj ${2 - selected.length} lag till`
+                : `Select ${2 - selected.length} more`
+              : locale === "sv"
+                ? "Spara tips"
+                : "Save tip"}
         </Button>
       )}
 

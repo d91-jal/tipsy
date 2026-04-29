@@ -1,7 +1,8 @@
 // components/competitions/JoinCompetitionForm.tsx
 "use client";
 
-import { useState, useActionState, useTransition } from "react";
+import { useFormState as useActionState } from "react-dom";
+import { useState, useTransition } from "react";
 import { joinCompetition } from "@/lib/actions/competitions";
 import type { JoinState } from "@/lib/actions/competitions";
 import { Button, Input } from "@/components/ui";
@@ -14,7 +15,11 @@ interface JoinCompetitionFormProps {
   locale: string;
 }
 
-export function JoinCompetitionForm({ competitionId, isPublic, locale }: JoinCompetitionFormProps) {
+export function JoinCompetitionForm({
+  competitionId,
+  isPublic,
+  locale,
+}: JoinCompetitionFormProps) {
   const [state, action] = useActionState(joinCompetition, initialState);
   const [showCode, setShowCode] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -59,7 +64,9 @@ export function JoinCompetitionForm({ competitionId, isPublic, locale }: JoinCom
         </Button>
       </form>
       {state.error === "INVALID_ACCESS_CODE" && (
-        <span className="text-xs text-red-500">{isSv ? "Fel kod" : "Wrong code"}</span>
+        <span className="text-xs text-red-500">
+          {isSv ? "Fel kod" : "Wrong code"}
+        </span>
       )}
     </div>
   );
