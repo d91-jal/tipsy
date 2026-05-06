@@ -25,7 +25,11 @@ export function Navbar({ session, locale }: NavbarProps) {
   };
 
   const navLinks = [
-    { href: "/competitions" as const, label: locale === "sv" ? "Tävlingar" : "Competitions", show: !!session },
+    {
+      href: "/competitions" as const,
+      label: locale === "sv" ? "Tävlingar" : "Competitions",
+      show: !!session,
+    },
     { href: "/tips/group-stage" as const, label: t("tips"), show: !!session },
     { href: "/standings" as const, label: t("standings"), show: !!session },
     ...(session?.user?.role === "ADMIN"
@@ -37,8 +41,11 @@ export function Navbar({ session, locale }: NavbarProps) {
     <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/80 backdrop-blur">
       <div className="container mx-auto max-w-5xl px-4 h-14 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 font-bold text-pitch-600 text-lg">
-          ⚽ <span className="hidden sm:inline">VM-Tippning 2026</span>
+        <Link
+          href="/"
+          className="flex items-center gap-2 font-bold text-pitch-600 text-lg"
+        >
+          ⚽ <span className="hidden sm:inline">VM-Tipset 2026</span>
         </Link>
 
         {/* Desktop nav */}
@@ -51,7 +58,7 @@ export function Navbar({ session, locale }: NavbarProps) {
                 "px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
                 pathname.startsWith(link.href.toString())
                   ? "bg-pitch-50 text-pitch-700"
-                  : "text-slate-600 hover:text-pitch-600 hover:bg-slate-50"
+                  : "text-slate-600 hover:text-pitch-600 hover:bg-slate-50",
               )}
             >
               {link.label}
@@ -98,11 +105,27 @@ export function Navbar({ session, locale }: NavbarProps) {
             className="md:hidden p-1.5 rounded text-slate-500"
             aria-label="Menu"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              {menuOpen
-                ? <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                : <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              }
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              {menuOpen ? (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              ) : (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              )}
             </svg>
           </button>
         </div>

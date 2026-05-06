@@ -15,7 +15,9 @@
     "db:studio": "prisma studio",
     "db:reset": "prisma migrate reset",
     "flags:download": "tsx scripts/download-flags.ts",
-    "flags:download:force": "tsx scripts/download-flags.ts --force"
+    "flags:download:force": "tsx scripts/download-flags.ts --force",
+    "sim:seed": "tsx scripts/seed-simulation.ts",
+    "sim:seed:reset": "tsx scripts/seed-simulation.ts --reset"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

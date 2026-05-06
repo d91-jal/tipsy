@@ -198,7 +198,7 @@ Odds hämtas från Unibet, Betsson och Bet365 (eller valfria källor) ca 7 dagar
 ## Projektstruktur
 
 ```
-vm-tippning/
+vm-tipset/
 ├── app/
 │   ├── [locale]/           # Alla sidor, locale-routing
 │   │   ├── tips/           # Tips-sektioner (4 st)

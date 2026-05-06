@@ -46,8 +46,8 @@ export async function scoreMatchTips(matchId: string): Promise<void> {
         data: {
           pointsEarned: tip.prediction === actualOutcome ? points : 0,
         },
-      })
-    )
+      }),
+    ),
   );
 }
 
@@ -66,7 +66,9 @@ function getOutcome(homeScore: number, awayScore: number): Outcome {
  * Each correctly tipped team earns their AdvancementOdds value.
  * Both teams must be correct for a "perfect" tip; partial credit is given.
  */
-export async function scoreGroupAdvancementTips(groupId: string): Promise<void> {
+export async function scoreGroupAdvancementTips(
+  groupId: string,
+): Promise<void> {
   const [actualAdvancements, tips, teams] = await Promise.all([
     prisma.groupActualAdvancement.findMany({ where: { groupId } }),
     prisma.groupAdvancementTip.findMany({ where: { groupId } }),
@@ -103,7 +105,7 @@ export async function scoreGroupAdvancementTips(groupId: string): Promise<void> 
         where: { id: tip.id },
         data: { pointsEarned: points },
       });
-    })
+    }),
   );
 }
 
@@ -139,7 +141,8 @@ export async function scoreTournamentTips(tournamentId: string): Promise<void> {
   const reachFinalOdds = new Map<string, number>();
   const winOdds = new Map<string, number>();
   for (const o of oddsRecords) {
-    if (o.type === "REACH_FINAL") reachFinalOdds.set(o.teamId, Number(o.avgValue));
+    if (o.type === "REACH_FINAL")
+      reachFinalOdds.set(o.teamId, Number(o.avgValue));
     if (o.type === "WIN") winOdds.set(o.teamId, Number(o.avgValue));
   }
 
@@ -159,7 +162,7 @@ export async function scoreTournamentTips(tournamentId: string): Promise<void> {
         where: { id: tip.id },
         data: { pointsEarned: points },
       });
-    })
+    }),
   );
 }
 
@@ -180,7 +183,9 @@ export type LeaderboardEntry = {
   rank: number;
 };
 
-export async function getLeaderboard(competitionId: string): Promise<LeaderboardEntry[]> {
+export async function getLeaderboard(
+  competitionId: string,
+): Promise<LeaderboardEntry[]> {
   // Fetch all members of this competition
   const members = await prisma.competitionMember.findMany({
     where: { competitionId },
@@ -201,7 +206,9 @@ export async function getLeaderboard(competitionId: string): Promise<Leaderboard
   const entries: Omit<LeaderboardEntry, "rank">[] = members.map((member) => {
     const { user } = member;
     const matchPoints = sumPoints(user.matchTips.map((t) => t.pointsEarned));
-    const advancementPoints = sumPoints(user.groupAdvancementTips.map((t) => t.pointsEarned));
+    const advancementPoints = sumPoints(
+      user.groupAdvancementTips.map((t) => t.pointsEarned),
+    );
     const tournamentPoints = user.tournamentTip?.pointsEarned
       ? Number(user.tournamentTip.pointsEarned)
       : 0;
@@ -234,7 +241,7 @@ export async function areTipsVisible(
   ownerId: string,
   viewerId: string,
   competitionId: string,
-  deadline: Date
+  deadline: Date,
 ): Promise<boolean> {
   if (ownerId === viewerId) return true;
   if (new Date() > deadline) return true;
@@ -246,6 +253,6 @@ export async function areTipsVisible(
   return member?.tipsPublic ?? false;
 }
 
-function sumPoints(values: (import("@prisma/client").Prisma.Decimal | null)[]): number {
-  return values.reduce((sum, v) => sum + (v ? Number(v) : 0), 0);
+function sumPoints(values: (number | null)[]): number {
+  return values.reduce<number>((sum, v) => sum + (v ?? 0), 0);
 }

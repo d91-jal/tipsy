@@ -5,7 +5,15 @@ import { useState, useTransition } from "react";
 import { signIn } from "next-auth/react";
 import { useTranslations, useLocale } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Button, Input, Label, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
+import {
+  Button,
+  Input,
+  Label,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui";
 
 type Tab = "magic" | "password";
 
@@ -33,7 +41,11 @@ export default function LoginPage() {
         callbackUrl,
       });
       if (res?.error) {
-        setError(locale === "sv" ? "Kunde inte skicka e-post. Försök igen." : "Could not send email. Try again.");
+        setError(
+          locale === "sv"
+            ? "Kunde inte skicka e-post. Försök igen."
+            : "Could not send email. Try again.",
+        );
       } else {
         setMagicSent(true);
       }
@@ -65,7 +77,9 @@ export default function LoginPage() {
           <CardContent className="pt-8 pb-8 text-center space-y-3">
             <div className="text-5xl">📬</div>
             <h2 className="text-xl font-semibold">{t("checkEmail")}</h2>
-            <p className="text-slate-500 text-sm">{t("checkEmailDesc", { email })}</p>
+            <p className="text-slate-500 text-sm">
+              {t("checkEmailDesc", { email })}
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -76,7 +90,7 @@ export default function LoginPage() {
     <div className="max-w-md mx-auto mt-12">
       <div className="mb-8 text-center">
         <div className="text-4xl mb-2">⚽</div>
-        <h1 className="text-2xl font-bold text-slate-800">VM-Tippning 2026</h1>
+        <h1 className="text-2xl font-bold text-slate-800">VM-Tipset 2026</h1>
         <p className="text-slate-500 mt-1 text-sm">
           {locale === "sv" ? "Logga in för att tippa" : "Log in to predict"}
         </p>
@@ -88,7 +102,10 @@ export default function LoginPage() {
           {(["magic", "password"] as Tab[]).map((t_) => (
             <button
               key={t_}
-              onClick={() => { setTab(t_); setError(""); }}
+              onClick={() => {
+                setTab(t_);
+                setError("");
+              }}
               className={`flex-1 py-3 text-sm font-medium transition-colors ${
                 tab === t_
                   ? "text-pitch-600 border-b-2 border-pitch-500 bg-pitch-50/50"
@@ -96,8 +113,12 @@ export default function LoginPage() {
               }`}
             >
               {t_ === "magic"
-                ? (locale === "sv" ? "Inloggningslänk" : "Magic link")
-                : (locale === "sv" ? "Lösenord" : "Password")}
+                ? locale === "sv"
+                  ? "Inloggningslänk"
+                  : "Magic link"
+                : locale === "sv"
+                  ? "Lösenord"
+                  : "Password"}
             </button>
           ))}
         </div>
