@@ -50,7 +50,7 @@ const FIFA_TO_ISO: Record<string, string> = {
   GHA: "gh", // Ghana
   HAI: "ht", // Haiti           — FIFA uses HAI, ISO uses HT
   HON: "hn", // Honduras        — FIFA uses HON, ISO uses HN
-  IRI: "ir", // Iran            — FIFA uses IRI, ISO uses IR
+  IRN: "ir", // Iran            — FIFA uses IRI, ISO uses IR
   IRQ: "iq", // Iraq            — FIFA uses IRA, ISO uses IQ
   JOR: "jo", // Jordan          — FIFA uses JOR, ISO uses JO
   JPN: "jp", // Japan           — FIFA uses JPN, ISO uses JP

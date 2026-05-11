@@ -8,6 +8,7 @@ import { getLeaderboard } from "@/lib/scoring";
 import { formatPoints, cn } from "@/lib/utils";
 import { VisibilityToggle } from "@/components/competitions/VisibilityToggle";
 import { Badge } from "@/components/ui";
+import { Link } from "@/i18n/routing";
 
 export const revalidate = 60;
 
@@ -202,6 +203,14 @@ export default async function CompetitionStandingsPage({
             )}
           </tbody>
         </table>
+      </div>
+      <div className="text-center">
+        <Link
+          href={`/competitions/${slug}/coupons` as any}
+          className="text-sm text-pitch-600 hover:underline"
+        >
+          {isSv ? "Se alla tipskuponger →" : "View all tip coupons →"}
+        </Link>
       </div>
 
       <p className="text-xs text-slate-400 text-center">

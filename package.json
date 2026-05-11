@@ -17,7 +17,9 @@
     "flags:download": "tsx scripts/download-flags.ts",
     "flags:download:force": "tsx scripts/download-flags.ts --force",
     "sim:seed": "tsx scripts/seed-simulation.ts",
-    "sim:seed:reset": "tsx scripts/seed-simulation.ts --reset"
+    "sim:seed:reset": "tsx scripts/seed-simulation.ts --reset",
+    "tournament:import": "tsx scripts/import-tournament.ts",
+    "tournament:export": "tsx scripts/import-tournament.ts --export"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
