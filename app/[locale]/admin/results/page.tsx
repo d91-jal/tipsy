@@ -37,7 +37,7 @@ export default async function AdminResultsPage() {
   });
 
   const pendingMatches = matches.filter(
-    (m) => m.status !== "FINISHED" && m.homeTeamId && m.awayTeamId
+    (m) => m.status !== "FINISHED" && m.homeTeamId && m.awayTeamId,
   );
   const finishedMatches = matches.filter((m) => m.status === "FINISHED");
 
@@ -51,7 +51,9 @@ export default async function AdminResultsPage() {
       <section className="space-y-3">
         <h2 className="text-lg font-semibold text-slate-700">
           {locale === "sv" ? "Matcher att rapportera" : "Matches to report"}{" "}
-          <span className="text-sm font-normal text-slate-400">({pendingMatches.length})</span>
+          <span className="text-sm font-normal text-slate-400">
+            ({pendingMatches.length})
+          </span>
         </h2>
         {pendingMatches.length === 0 && (
           <p className="text-slate-400 text-sm">
@@ -86,23 +88,33 @@ export default async function AdminResultsPage() {
         <section className="space-y-3">
           <h2 className="text-lg font-semibold text-slate-700">
             {locale === "sv" ? "Spelade matcher" : "Finished matches"}{" "}
-            <span className="text-sm font-normal text-slate-400">({finishedMatches.length})</span>
+            <span className="text-sm font-normal text-slate-400">
+              ({finishedMatches.length})
+            </span>
           </h2>
           <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
             <table className="w-full text-sm">
               <tbody className="divide-y divide-slate-50">
                 {finishedMatches.map((match) => (
                   <tr key={match.id} className="px-4 py-2">
-                    <td className="px-4 py-2 text-slate-400 w-16">#{match.matchNumber}</td>
-                    <td className="px-4 py-2 text-slate-600 text-xs">{stageLabel(match.stage, locale)}</td>
+                    <td className="px-4 py-2 text-slate-400 w-16">
+                      #{match.matchNumber}
+                    </td>
+                    <td className="px-4 py-2 text-slate-600 text-xs">
+                      {stageLabel(match.stage, locale)}
+                    </td>
                     <td className="px-4 py-2 text-right font-medium">
-                      {locale === "sv" ? match.homeTeam?.nameSv : match.homeTeam?.nameEn}
+                      {locale === "sv"
+                        ? match.homeTeam?.nameSv
+                        : match.homeTeam?.nameEn}
                     </td>
                     <td className="px-4 py-2 text-center font-bold text-pitch-700">
                       {match.homeScore}–{match.awayScore}
                     </td>
                     <td className="px-4 py-2 font-medium">
-                      {locale === "sv" ? match.awayTeam?.nameSv : match.awayTeam?.nameEn}
+                      {locale === "sv"
+                        ? match.awayTeam?.nameSv
+                        : match.awayTeam?.nameEn}
                     </td>
                     <td className="px-4 py-2 text-slate-400 text-xs">
                       {formatDate(match.scheduledAt, locale)}
@@ -111,6 +123,25 @@ export default async function AdminResultsPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+        </section>
+      )}
+
+      {/* Finished matches — editable */}
+      {finishedMatches.length > 0 && (
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold text-slate-700">
+            {locale === "sv" ? "Korrigera resultat" : "Correct results"}
+          </h2>
+          <p className="text-xs text-slate-400">
+            {locale === "sv"
+              ? "Poäng räknas om automatiskt vid korrigering."
+              : "Points are automatically recalculated on correction."}
+          </p>
+          <div className="space-y-2">
+            {finishedMatches.map((match) => (
+              <AdminResultForm key={match.id} match={match} locale={locale} />
+            ))}
           </div>
         </section>
       )}
