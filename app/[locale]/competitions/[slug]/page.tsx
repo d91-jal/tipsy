@@ -227,14 +227,6 @@ export default async function CompetitionStandingsPage({
           {leaderboard.map((entry, i) => {
             const isMe = entry.userId === session.user.id;
             const isFirst = entry.rank === 1;
-            const medal =
-              entry.rank === 1
-                ? "🥇"
-                : entry.rank === 2
-                  ? "🥈"
-                  : entry.rank === 3
-                    ? "🥉"
-                    : null;
             const canViewTips = isMe || isLocked || entry.tipsPublic;
 
             return (
@@ -264,7 +256,7 @@ export default async function CompetitionStandingsPage({
                     color: isFirst ? "var(--gold)" : "var(--ink-faint)",
                   }}
                 >
-                  {medal ?? String(entry.rank).padStart(2, "0")}
+                  {String(entry.rank).padStart(2, "0")}
                 </div>
 
                 {/* Name */}

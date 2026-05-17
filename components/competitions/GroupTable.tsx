@@ -1,12 +1,7 @@
-// components/competitions/GroupTable.tsx
+// components/competitions/GroupTable.tsx  — Fas 3 redesign
 "use client";
 
 import { useState } from "react";
-import { cn } from "@/lib/utils";
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Types
-// ─────────────────────────────────────────────────────────────────────────────
 
 export type GroupTableTeam = {
   teamId: string;
@@ -22,22 +17,10 @@ export type GroupTableTeam = {
   goalsAgainst: number;
   points: number;
   goalDiff: number;
-  isActuallyAdvancing: boolean; // set by admin
+  isActuallyAdvancing: boolean;
 };
 
-export type GroupTableData = {
-  groupName: string;
-  teams: GroupTableTeam[];
-};
-
-interface GroupTableProps {
-  groups: GroupTableData[];
-  locale: string;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Single group table
-// ─────────────────────────────────────────────────────────────────────────────
+export type GroupTableData = { groupName: string; teams: GroupTableTeam[] };
 
 function SingleGroupTable({
   group,
@@ -48,118 +31,172 @@ function SingleGroupTable({
 }) {
   const isSv = locale === "sv";
 
+  const thStyle: React.CSSProperties = {
+    fontFamily: "var(--f-mono)",
+    fontSize: 9.5,
+    letterSpacing: "0.14em",
+    textTransform: "uppercase",
+    color: "var(--gold)",
+    fontWeight: 500,
+    padding: "8px 8px",
+    textAlign: "center",
+  };
+
   return (
-    <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
-      {/* Header */}
-      <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
+    <div
+      style={{
+        borderRadius: "var(--r-card)",
+        overflow: "hidden",
+        boxShadow: "var(--sh-card)",
+      }}
+    >
+      {/* Group header */}
+      <div
+        style={{
+          background: "var(--green-deep)",
+          padding: "10px 16px",
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+        }}
+      >
         <span
-          className="inline-flex items-center justify-center w-6 h-6 rounded-full
-                         bg-pitch-500 text-white text-xs font-bold shrink-0"
+          style={{
+            display: "inline-flex",
+            width: 22,
+            height: 22,
+            borderRadius: "50%",
+            background: "var(--gold)",
+            color: "var(--green-deep)",
+            alignItems: "center",
+            justifyContent: "center",
+            fontFamily: "var(--f-mono)",
+            fontWeight: 700,
+            fontSize: 10,
+          }}
         >
           {group.groupName}
         </span>
-        <span className="font-semibold text-slate-700 text-sm">
+        <span
+          style={{
+            fontFamily: "var(--f-display)",
+            fontWeight: 600,
+            fontSize: 15,
+            color: "var(--cream)",
+          }}
+        >
           {isSv ? `Grupp ${group.groupName}` : `Group ${group.groupName}`}
         </span>
       </div>
 
-      {/* Table */}
-      <table className="w-full text-xs">
+      <table
+        style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}
+      >
         <thead>
-          <tr className="border-b border-slate-100 text-slate-400">
-            <th className="px-3 py-1.5 text-left w-6">#</th>
-            <th className="px-2 py-1.5 text-left">{isSv ? "Lag" : "Team"}</th>
-            <th
-              className="px-2 py-1.5 text-center w-7"
-              title={isSv ? "Spelade" : "Played"}
-            >
-              S
+          <tr
+            style={{
+              background: "var(--green-uplift)",
+              borderBottom: "1px solid rgba(255,255,255,0.08)",
+            }}
+          >
+            <th style={{ ...thStyle, width: 24, textAlign: "center" }}>#</th>
+            <th style={{ ...thStyle, textAlign: "left", paddingLeft: 12 }}>
+              {isSv ? "Lag" : "Team"}
             </th>
-            <th
-              className="px-2 py-1.5 text-center w-7"
-              title={isSv ? "Vinster" : "Won"}
-            >
-              V
-            </th>
-            <th
-              className="px-2 py-1.5 text-center w-7"
-              title={isSv ? "Oavgjorda" : "Drawn"}
-            >
-              O
-            </th>
-            <th
-              className="px-2 py-1.5 text-center w-7"
-              title={isSv ? "Förluster" : "Lost"}
-            >
-              F
-            </th>
-            <th
-              className="px-2 py-1.5 text-center w-12"
-              title={isSv ? "Gjorda-Insläppta" : "Goals For-Against"}
-            >
-              GM-IM
-            </th>
-            <th
-              className="px-2 py-1.5 text-center w-8"
-              title={isSv ? "Målskillnad" : "Goal Difference"}
-            >
-              MS
-            </th>
-            <th
-              className="px-3 py-1.5 text-center w-8 font-semibold text-slate-500"
-              title={isSv ? "Poäng" : "Points"}
-            >
-              P
-            </th>
+            {["S", "V", "O", "F", "GM-IM", "MS", "P"].map((h) => (
+              <th
+                key={h}
+                style={{
+                  ...thStyle,
+                  color: h === "P" ? "#fff" : "var(--gold)",
+                }}
+              >
+                {h}
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody>
           {group.teams.map((team, idx) => {
-            const advances = idx < 2; // top 2 advance (simplified — actual set by admin)
-            const actuallyAdvances = team.isActuallyAdvancing;
+            const advances = idx < 2;
+            const confirmed = team.isActuallyAdvancing;
 
             return (
               <tr
                 key={team.teamId}
-                className={cn(
-                  "border-b border-slate-50 last:border-0",
-                  actuallyAdvances
-                    ? "bg-green-50/40"
+                style={{
+                  background: confirmed
+                    ? "rgba(203,162,88,0.08)"
                     : advances && team.played > 0
-                      ? "bg-pitch-50/30"
-                      : "",
-                )}
+                      ? "var(--green-pale)"
+                      : idx % 2 === 0
+                        ? "#fff"
+                        : "var(--cream)",
+                  borderBottom:
+                    idx < group.teams.length - 1
+                      ? "1px solid var(--hairline)"
+                      : "none",
+                }}
               >
                 {/* Position */}
-                <td className="px-3 py-2 text-slate-400 font-medium">
+                <td
+                  style={{
+                    padding: "10px 8px",
+                    textAlign: "center",
+                    fontFamily: "var(--f-mono)",
+                    fontWeight: 700,
+                    fontSize: 11,
+                    color: confirmed
+                      ? "var(--gold)"
+                      : idx < 2
+                        ? "var(--green)"
+                        : "var(--ink-faint)",
+                  }}
+                >
                   {idx + 1}
                 </td>
 
-                {/* Team name + flag */}
-                <td className="px-2 py-2">
-                  <div className="flex items-center gap-1.5">
+                {/* Flag + name */}
+                <td style={{ padding: "10px 8px 10px 12px" }}>
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 8 }}
+                  >
                     {team.flagUrl && (
                       <img
                         src={team.flagUrl}
                         alt={team.fifaCode}
-                        className="w-5 h-3.5 object-cover rounded-sm shrink-0"
+                        style={{
+                          width: 20,
+                          height: 13,
+                          objectFit: "cover",
+                          borderRadius: 2,
+                          flexShrink: 0,
+                        }}
                         onError={(e) => {
                           (e.target as HTMLImageElement).style.display = "none";
                         }}
                       />
                     )}
                     <span
-                      className={cn(
-                        "font-medium truncate max-w-[100px]",
-                        actuallyAdvances ? "text-green-700" : "text-slate-700",
-                      )}
+                      style={{
+                        fontFamily: "var(--f-serif)",
+                        fontWeight: 600,
+                        fontSize: 13,
+                        letterSpacing: "-0.01em",
+                        color: confirmed ? "var(--green-deep)" : "var(--ink)",
+                        whiteSpace: "nowrap",
+                      }}
                     >
                       {locale === "sv" ? team.nameSv : team.nameEn}
                     </span>
-                    {actuallyAdvances && (
+                    {confirmed && (
                       <span
-                        className="text-green-500 text-[10px]"
-                        title={isSv ? "Avancerar" : "Advances"}
+                        style={{
+                          fontFamily: "var(--f-mono)",
+                          fontSize: 8,
+                          color: "var(--green)",
+                          letterSpacing: "0.1em",
+                        }}
                       >
                         ✓
                       </span>
@@ -168,34 +205,74 @@ function SingleGroupTable({
                 </td>
 
                 {/* Stats */}
-                <td className="px-2 py-2 text-center text-slate-500">
-                  {team.played}
-                </td>
-                <td className="px-2 py-2 text-center text-slate-500">
-                  {team.won}
-                </td>
-                <td className="px-2 py-2 text-center text-slate-500">
-                  {team.drawn}
-                </td>
-                <td className="px-2 py-2 text-center text-slate-500">
-                  {team.lost}
-                </td>
-                <td className="px-2 py-2 text-center text-slate-500 font-mono text-[11px]">
+                {[team.played, team.won, team.drawn, team.lost].map(
+                  (val, i) => (
+                    <td
+                      key={i}
+                      style={{
+                        padding: "10px 8px",
+                        textAlign: "center",
+                        fontFamily: "var(--f-mono)",
+                        fontSize: 12,
+                        color: "var(--ink-soft)",
+                        fontVariantNumeric: "tabular-nums",
+                      }}
+                    >
+                      {val}
+                    </td>
+                  ),
+                )}
+
+                {/* GM-IM */}
+                <td
+                  style={{
+                    padding: "10px 8px",
+                    textAlign: "center",
+                    fontFamily: "var(--f-mono)",
+                    fontSize: 11,
+                    color: "var(--ink-soft)",
+                    fontVariantNumeric: "tabular-nums",
+                  }}
+                >
                   {team.goalsFor}–{team.goalsAgainst}
                 </td>
+
+                {/* Goal diff */}
                 <td
-                  className={cn(
-                    "px-2 py-2 text-center font-medium",
-                    team.goalDiff > 0
-                      ? "text-green-600"
-                      : team.goalDiff < 0
-                        ? "text-red-500"
-                        : "text-slate-400",
-                  )}
+                  style={{
+                    padding: "10px 8px",
+                    textAlign: "center",
+                    fontFamily: "var(--f-mono)",
+                    fontWeight: 600,
+                    fontSize: 12,
+                    color:
+                      team.goalDiff > 0
+                        ? "var(--green)"
+                        : team.goalDiff < 0
+                          ? "var(--stamp-red)"
+                          : "var(--ink-faint)",
+                    fontVariantNumeric: "tabular-nums",
+                  }}
                 >
                   {team.goalDiff > 0 ? `+${team.goalDiff}` : team.goalDiff}
                 </td>
-                <td className="px-3 py-2 text-center font-bold text-slate-800">
+
+                {/* Points */}
+                <td
+                  style={{
+                    padding: "10px 8px",
+                    textAlign: "center",
+                    fontFamily: "var(--f-mono)",
+                    fontWeight: 700,
+                    fontSize: 14,
+                    color: confirmed
+                      ? "var(--gold)"
+                      : idx < 2
+                        ? "var(--green-deep)"
+                        : "var(--ink)",
+                    fontVariantNumeric: "tabular-nums",
+                  }}
+                >
                   {team.points}
                 </td>
               </tr>
@@ -207,59 +284,136 @@ function SingleGroupTable({
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Grid of all groups
-// ─────────────────────────────────────────────────────────────────────────────
-
-export function GroupTablesGrid({ groups, locale }: GroupTableProps) {
-  const isSv = locale === "sv";
+export function GroupTablesGrid({
+  groups,
+  locale,
+}: {
+  groups: GroupTableData[];
+  locale: string;
+}) {
   const [collapsed, setCollapsed] = useState(false);
+  const isSv = locale === "sv";
 
   return (
-    <div className="space-y-3">
+    <div>
       {/* Section header */}
       <button
         onClick={() => setCollapsed(!collapsed)}
-        className="w-full flex items-center justify-between text-left"
+        style={{
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          background: "transparent",
+          border: "none",
+          cursor: "pointer",
+          padding: "0 0 20px",
+        }}
       >
-        <h2 className="text-lg font-semibold text-slate-700">
-          {isSv ? "Gruppställningar" : "Group Standings"}
-        </h2>
-        <span className="text-slate-400 text-sm">
-          {collapsed ? "▼ Visa" : "▲ Dölj"}
+        <div>
+          <p className="eyebrow" style={{ margin: "0 0 6px" }}>
+            {isSv ? "Gruppspelet" : "Group Stage"}
+          </p>
+          <h2
+            style={{
+              fontFamily: "var(--f-display)",
+              fontWeight: 600,
+              fontSize: 24,
+              letterSpacing: "-0.02em",
+              color: "var(--green-deep)",
+              margin: 0,
+            }}
+          >
+            {isSv ? "Grupptabeller" : "Group Standings"}
+          </h2>
+        </div>
+        <span
+          style={{
+            fontFamily: "var(--f-mono)",
+            fontSize: 10,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            color: "var(--ink-faint)",
+          }}
+        >
+          {collapsed
+            ? isSv
+              ? "Visa ▼"
+              : "Show ▼"
+            : isSv
+              ? "Dölj ▲"
+              : "Hide ▲"}
         </span>
       </button>
 
       {!collapsed && (
         <>
           {/* Column legend */}
-          <p className="text-xs text-slate-400">
-            S = {isSv ? "Spelade" : "Played"} · V = {isSv ? "Vinster" : "Won"} ·
-            O = {isSv ? "Oavgjorda" : "Drawn"} · F ={" "}
-            {isSv ? "Förluster" : "Lost"} · GM-IM ={" "}
-            {isSv ? "Gjorda-Insläppta" : "Goals For-Against"} · MS ={" "}
-            {isSv ? "Målskillnad" : "Goal Diff"} · P ={" "}
-            {isSv ? "Poäng" : "Points"}
+          <p
+            style={{
+              fontFamily: "var(--f-mono)",
+              fontSize: 10,
+              letterSpacing: "0.1em",
+              color: "var(--ink-faint)",
+              marginBottom: 16,
+            }}
+          >
+            S = {isSv ? "Spelade" : "Played"} · V = {isSv ? "Vunna" : "Won"} · O
+            = {isSv ? "Oavgjorda" : "Drawn"} · F = {isSv ? "Förlorade" : "Lost"}{" "}
+            · GM-IM = {isSv ? "Gjorda–Insläppta" : "GF–GA"} · MS ={" "}
+            {isSv ? "Målskillnad" : "GD"} · P = {isSv ? "Poäng" : "Pts"}
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(420px, 1fr))",
+              gap: 12,
+            }}
+          >
             {groups.map((g) => (
               <SingleGroupTable key={g.groupName} group={g} locale={locale} />
             ))}
           </div>
 
-          {/* Advancing indicator */}
-          <div className="flex gap-4 text-xs text-slate-400">
-            <span className="flex items-center gap-1.5">
-              <span className="inline-block w-3 h-3 rounded-sm bg-green-50 border border-green-200" />
-              {isSv
-                ? "Avancerar (bekräftat av admin)"
-                : "Advancing (confirmed by admin)"}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="inline-block w-3 h-3 rounded-sm bg-pitch-50 border border-pitch-200" />
-              {isSv ? "Leder gruppen" : "Leading group"}
-            </span>
+          {/* Legend */}
+          <div style={{ display: "flex", gap: 20, marginTop: 16 }}>
+            {[
+              {
+                bg: "rgba(203,162,88,0.08)",
+                label: isSv ? "Bekräftat avancemang" : "Confirmed advancement",
+              },
+              {
+                bg: "var(--green-pale)",
+                label: isSv ? "Leder gruppen" : "Leading group",
+              },
+            ].map(({ bg, label }) => (
+              <div
+                key={label}
+                style={{ display: "flex", alignItems: "center", gap: 6 }}
+              >
+                <span
+                  style={{
+                    display: "inline-block",
+                    width: 12,
+                    height: 12,
+                    borderRadius: 2,
+                    background: bg,
+                    border: "1px solid var(--hairline)",
+                  }}
+                />
+                <span
+                  style={{
+                    fontFamily: "var(--f-mono)",
+                    fontSize: 10,
+                    letterSpacing: "0.08em",
+                    color: "var(--ink-faint)",
+                  }}
+                >
+                  {label}
+                </span>
+              </div>
+            ))}
           </div>
         </>
       )}

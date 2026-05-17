@@ -1,4 +1,4 @@
-// app/[locale]/tips/tournament/page.tsx
+// app/[locale]/tips/tournament/page.tsx  — Fas 3 redesign
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getLocale } from "next-intl/server";
@@ -8,53 +8,77 @@ import { TournamentTipForm } from "@/components/tips/TournamentTipForm";
 export default async function TournamentTipPage() {
   const session = await auth();
   const locale = await getLocale();
-
   if (!session?.user) redirect({ href: "/auth/login", locale });
 
   const tournament = await prisma.tournament.findUniqueOrThrow({
     where: { slug: "wc2026" },
-    select: { id: true, oddsLockDate: true, nameSv: true, nameEn: true },
+    select: { id: true, oddsLockDate: true },
   });
 
   const teams = await prisma.team.findMany({
-    include: {
-      group: true,
-      tournamentOdds: true,
-    },
+    include: { group: true, tournamentOdds: true },
     orderBy: { nameEn: "asc" },
   });
 
   const existingTip = await prisma.tournamentTip.findUnique({
     where: { userId: session.user.id },
-    include: {
-      finalist1: true,
-      finalist2: true,
-      winner: true,
+    select: {
+      finalist1Id: true,
+      finalist2Id: true,
+      winnerId: true,
+      pointsEarned: true,
     },
   });
 
   const locked = new Date() > new Date(tournament.oddsLockDate);
+  const isSv = locale === "sv";
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-800">
-          {locale === "sv" ? "Finallag & Vinnare" : "Finalists & Winner"}
+    <div>
+      {/* Page header */}
+      <div style={{ marginBottom: 36 }}>
+        <p className="eyebrow" style={{ marginBottom: 10 }}>
+          {isSv ? "Tips · VM 2026" : "Predictions · WC 2026"}
+        </p>
+        <h1
+          style={{
+            fontFamily: "var(--f-display)",
+            fontWeight: 600,
+            fontSize: "clamp(28px, 4vw, 44px)",
+            letterSpacing: "-0.02em",
+            lineHeight: 1.05,
+            color: "var(--green-deep)",
+            margin: "0 0 10px",
+          }}
+        >
+          {isSv ? "Finallag & Vinnare." : "Finalists & Winner."}
         </h1>
-        <p className="text-slate-500 text-sm mt-0.5">
-          {locale === "sv"
-            ? "Välj vilka 2 lag som spelar finalen och vem som vinner VM"
-            : "Pick which 2 teams will play the final and who wins the tournament"}
+        <p style={{ fontSize: 15, color: "var(--ink-soft)", margin: 0 }}>
+          {isSv
+            ? "Välj vilka 2 lag som spelar finalen och vem som vinner VM."
+            : "Pick which 2 teams play the final and who wins the World Cup."}
         </p>
       </div>
 
-      <TournamentTipForm
-        tournamentId={tournament.id}
-        teams={teams}
-        existingTip={existingTip}
-        locked={locked}
-        locale={locale}
-      />
+      <div style={{ maxWidth: 580 }}>
+        <TournamentTipForm
+          tournamentId={tournament.id}
+          teams={teams.map((t) => ({
+            ...t,
+            tournamentOdds: t.tournamentOdds.map((o) => ({
+              ...o,
+              avgValue: Number(o.avgValue),
+            })),
+          }))}
+          existingTip={
+            existingTip
+              ? { ...existingTip, pointsEarned: existingTip.pointsEarned }
+              : null
+          }
+          locked={locked}
+          locale={locale}
+        />
+      </div>
     </div>
   );
 }

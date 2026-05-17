@@ -1,11 +1,4 @@
-// components/competitions/CouponsView.tsx
-// "use client" — full interactive coupon matrix view.
-//
-// Layout inspired by classic Excel tipping sheets:
-//   - Tabs: Group Stage | Advancement | Tournament
-//   - Rows = matches / teams, Columns = participants
-//   - Color coding: green = correct, red = wrong, yellow = pending
-
+// components/competitions/CouponsView.tsx  — Fas 3 redesign
 "use client";
 
 import { useState } from "react";
@@ -17,21 +10,12 @@ type Member = {
   isSimBot: boolean;
   user: { id: string; name: string | null; email: string };
 };
-
-type Team = {
-  id: string;
-  nameSv: string;
-  nameEn: string;
-  fifaCode: string;
-  flagUrl: string | null;
-};
-
+type Team = { id: string; nameSv: string; nameEn: string; fifaCode: string };
 type MatchTip = {
   userId: string;
   prediction: "HOME" | "DRAW" | "AWAY";
   pointsEarned: number | null;
 };
-
 type Match = {
   id: string;
   matchNumber: number;
@@ -43,7 +27,6 @@ type Match = {
   awayTeam: Team | null;
   matchTips: MatchTip[];
 };
-
 type AdvancementTip = {
   userId: string;
   groupId: string;
@@ -51,9 +34,7 @@ type AdvancementTip = {
   secondTeam: Team;
   pointsEarned: number | null;
 };
-
 type ActualAdvancement = { teamId: string; position: number; team: Team };
-
 type Group = {
   id: string;
   name: string;
@@ -62,7 +43,6 @@ type Group = {
   advancementTips: AdvancementTip[];
   actualAdvancements: ActualAdvancement[];
 };
-
 type TournamentTip = {
   userId: string;
   finalist1: Team;
@@ -70,7 +50,6 @@ type TournamentTip = {
   winner: Team;
   pointsEarned: number | null;
 };
-
 type TournamentActual = {
   finalist1: Team;
   finalist2: Team;
@@ -90,33 +69,95 @@ type Props = {
 
 type Tab = "groups" | "advancement" | "tournament";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Helpers
-// ─────────────────────────────────────────────────────────────────────────────
-
-function outcomeLabel(o: "HOME" | "DRAW" | "AWAY"): string {
+function outcomeLabel(o: "HOME" | "DRAW" | "AWAY") {
   return o === "HOME" ? "1" : o === "DRAW" ? "X" : "2";
 }
-
-function actualOutcome(match: Match): "HOME" | "DRAW" | "AWAY" | null {
-  if (match.homeScore === null || match.awayScore === null) return null;
-  if (match.homeScore > match.awayScore) return "HOME";
-  if (match.awayScore > match.homeScore) return "AWAY";
+function actualOutcome(m: Match): "HOME" | "DRAW" | "AWAY" | null {
+  if (m.homeScore === null || m.awayScore === null) return null;
+  if (m.homeScore > m.awayScore) return "HOME";
+  if (m.awayScore > m.homeScore) return "AWAY";
   return "DRAW";
 }
-
-function teamName(team: Team | null, locale: string): string {
-  if (!team) return "?";
-  return locale === "sv" ? team.nameSv : team.nameEn;
+function tn(team: Team | null, locale: string) {
+  return locale === "sv" ? (team as any)?.nameSv : (team as any)?.nameEn;
 }
-
-function userName(member: Member): string {
-  return member.user.name ?? member.user.email.split("@")[0];
+function userName(m: Member) {
+  return m.user.name ?? m.user.email.split("@")[0];
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Main component
+// Cell — a single 1/X/2 tip cell in the matrix
 // ─────────────────────────────────────────────────────────────────────────────
+function TipCell({
+  tip,
+  actual,
+  isMe,
+  finished,
+}: {
+  tip: MatchTip | undefined;
+  actual: "HOME" | "DRAW" | "AWAY" | null;
+  isMe: boolean;
+  finished: boolean;
+}) {
+  if (!tip) {
+    return (
+      <td
+        style={{
+          padding: "8px 4px",
+          textAlign: "center",
+          background: isMe ? "rgba(203,162,88,0.05)" : "transparent",
+          borderRight: "1px solid var(--hairline)",
+        }}
+      >
+        <span style={{ color: "var(--hairline)", fontSize: 12 }}>—</span>
+      </td>
+    );
+  }
+  const correct = finished && actual === tip.prediction;
+  const wrong = finished && actual !== null && actual !== tip.prediction;
+  return (
+    <td
+      style={{
+        padding: "8px 4px",
+        textAlign: "center",
+        background: isMe ? "rgba(203,162,88,0.06)" : "transparent",
+        borderRight: "1px solid var(--hairline)",
+      }}
+    >
+      <span
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: 26,
+          height: 26,
+          borderRadius: 3,
+          fontFamily: "var(--f-display)",
+          fontStyle: "italic",
+          fontWeight: 600,
+          fontSize: 15,
+          background: correct
+            ? "var(--gold)"
+            : wrong
+              ? "rgba(156,42,31,0.08)"
+              : isMe
+                ? "var(--green-pale)"
+                : "transparent",
+          color: correct
+            ? "var(--green-deep)"
+            : wrong
+              ? "var(--stamp-red)"
+              : "var(--ink-soft)",
+          border:
+            !correct && !wrong && !isMe ? "1px solid var(--hairline)" : "none",
+          textDecoration: wrong ? "line-through" : "none",
+        }}
+      >
+        {outcomeLabel(tip.prediction)}
+      </span>
+    </td>
+  );
+}
 
 export function CouponsView({
   competition,
@@ -132,11 +173,11 @@ export function CouponsView({
   const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
   const isSv = locale === "sv";
 
-  // Real members (non-bots), sorted: current user first
+  // Current user first, then alphabetical
   const sortedMembers = [...members].sort((a, b) => {
     if (a.userId === currentUserId) return -1;
     if (b.userId === currentUserId) return 1;
-    return 0;
+    return userName(a).localeCompare(userName(b));
   });
 
   const tabs: { key: Tab; label: string }[] = [
@@ -145,18 +186,76 @@ export function CouponsView({
     { key: "tournament", label: isSv ? "🏆 Final" : "🏆 Final" },
   ];
 
+  // Sticky column header style
+  const stickyHead: React.CSSProperties = {
+    position: "sticky",
+    left: 0,
+    zIndex: 2,
+    background: "var(--green-deep)",
+    color: "var(--gold)",
+    fontFamily: "var(--f-mono)",
+    fontSize: 10,
+    letterSpacing: "0.14em",
+    textTransform: "uppercase",
+    padding: "10px 16px",
+    whiteSpace: "nowrap",
+    borderRight: "2px solid rgba(255,255,255,0.1)",
+  };
+
+  const memberHead = (m: Member): React.CSSProperties => ({
+    fontFamily: "var(--f-mono)",
+    fontSize: 10,
+    letterSpacing: "0.1em",
+    textTransform: "uppercase",
+    padding: "10px 6px",
+    textAlign: "center",
+    minWidth: 52,
+    maxWidth: 72,
+    background:
+      m.userId === currentUserId
+        ? "rgba(203,162,88,0.15)"
+        : "var(--green-deep)",
+    color: m.userId === currentUserId ? "var(--gold)" : "rgba(255,255,255,0.6)",
+    borderRight: "1px solid rgba(255,255,255,0.08)",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+  });
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-800">
+        <p className="eyebrow" style={{ marginBottom: 8 }}>
+          {competition.name}
+        </p>
+        <h1
+          style={{
+            fontFamily: "var(--f-display)",
+            fontWeight: 600,
+            fontSize: "clamp(26px, 4vw, 38px)",
+            letterSpacing: "-0.02em",
+            color: "var(--green-deep)",
+            margin: 0,
+          }}
+        >
           {isSv ? "Tipskuponger" : "Tip Coupons"}
         </h1>
-        <p className="text-sm text-slate-500 mt-0.5">{competition.name}</p>
       </div>
 
       {!isLocked && (
-        <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-xs text-amber-700">
+        <div
+          style={{
+            fontFamily: "var(--f-mono)",
+            fontSize: 10.5,
+            letterSpacing: "0.1em",
+            color: "var(--ink-soft)",
+            padding: "10px 16px",
+            border: "1px solid var(--hairline)",
+            borderRadius: "var(--r-input)",
+            background: "var(--paper)",
+          }}
+        >
           🔒{" "}
           {isSv
             ? "Tips visas bara för spelare som valt att dela dem innan låsdatum."
@@ -165,95 +264,141 @@ export function CouponsView({
       )}
 
       {/* Tab bar */}
-      <div className="flex gap-1 rounded-xl bg-slate-100 p-1">
+      <div
+        style={{ display: "flex", borderBottom: "2px solid var(--hairline)" }}
+      >
         {tabs.map((t) => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={cn(
-              "flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all",
-              tab === t.key
-                ? "bg-white text-pitch-700 shadow-sm"
-                : "text-slate-500 hover:text-slate-700",
-            )}
+            style={{
+              padding: "10px 20px",
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              fontFamily: "var(--f-mono)",
+              fontSize: 11,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: tab === t.key ? "var(--green-deep)" : "var(--ink-faint)",
+              borderBottom:
+                tab === t.key
+                  ? "2px solid var(--green)"
+                  : "2px solid transparent",
+              marginBottom: -2,
+              transition: "color 0.15s",
+            }}
           >
             {t.label}
           </button>
         ))}
       </div>
 
-      {/* ── GROUP STAGE TAB ─────────────────────────────────────────── */}
+      {/* ── GROUP STAGE ────────────────────────────────────────────── */}
       {tab === "groups" && (
         <div className="space-y-3">
           {groups.map((group) => {
-            const isExpanded =
-              expandedGroup === group.id || expandedGroup === null;
+            const isOpen = expandedGroup === group.id || expandedGroup === null;
             return (
               <div
                 key={group.id}
-                className="rounded-xl border border-slate-200 bg-white overflow-hidden"
+                style={{
+                  borderRadius: "var(--r-card)",
+                  overflow: "hidden",
+                  boxShadow: "var(--sh-card)",
+                }}
               >
-                {/* Group header */}
+                {/* Group toggle header */}
                 <button
                   onClick={() =>
                     setExpandedGroup(
-                      expandedGroup === group.id ? null : group.id,
+                      isOpen && expandedGroup === group.id ? null : group.id,
                     )
                   }
-                  className="w-full flex items-center justify-between px-4 py-3
-                             bg-slate-50 hover:bg-slate-100 transition-colors"
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "12px 20px",
+                    background: "var(--green-deep)",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
                 >
-                  <span className="font-semibold text-slate-700 flex items-center gap-2">
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: 10 }}
+                  >
                     <span
-                      className="inline-flex items-center justify-center w-6 h-6 rounded-full
-                                     bg-pitch-500 text-white text-xs font-bold"
+                      style={{
+                        display: "inline-flex",
+                        width: 24,
+                        height: 24,
+                        borderRadius: "50%",
+                        background: "var(--gold)",
+                        color: "var(--green-deep)",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontFamily: "var(--f-mono)",
+                        fontWeight: 700,
+                        fontSize: 11,
+                      }}
                     >
                       {group.name}
                     </span>
-                    {isSv ? `Grupp ${group.name}` : `Group ${group.name}`}
-                  </span>
-                  <span className="text-slate-400 text-xs">
-                    {isExpanded ? "▲" : "▼"}
+                    <span
+                      style={{
+                        fontFamily: "var(--f-display)",
+                        fontWeight: 600,
+                        fontSize: 16,
+                        color: "var(--cream)",
+                      }}
+                    >
+                      {isSv ? `Grupp ${group.name}` : `Group ${group.name}`}
+                    </span>
+                  </div>
+                  <span
+                    style={{ color: "rgba(255,255,255,0.4)", fontSize: 12 }}
+                  >
+                    {isOpen ? "▲" : "▼"}
                   </span>
                 </button>
 
-                {isExpanded && (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm border-collapse">
+                {isOpen && (
+                  <div style={{ overflowX: "auto" }}>
+                    <table
+                      style={{
+                        width: "100%",
+                        borderCollapse: "collapse",
+                        fontSize: 13,
+                      }}
+                    >
                       <thead>
-                        <tr className="border-b border-slate-100">
-                          {/* Match column */}
+                        <tr>
+                          <th style={stickyHead}>{isSv ? "Match" : "Match"}</th>
                           <th
-                            className="px-3 py-2 text-left font-medium text-slate-500 bg-slate-50
-                                         sticky left-0 z-10 min-w-[180px] border-r border-slate-100"
-                          >
-                            {isSv ? "Match" : "Match"}
-                          </th>
-                          <th
-                            className="px-2 py-2 text-center font-medium text-slate-500 bg-slate-50
-                                         min-w-[60px] border-r border-slate-100"
+                            style={{
+                              ...stickyHead,
+                              left: "auto",
+                              position: "static",
+                              minWidth: 52,
+                            }}
                           >
                             {isSv ? "Facit" : "Result"}
                           </th>
-                          {/* One column per participant */}
                           {sortedMembers.map((m) => (
-                            <th
-                              key={m.userId}
-                              className={cn(
-                                "px-2 py-2 text-center font-medium min-w-[80px]",
-                                m.userId === currentUserId
-                                  ? "bg-pitch-50 text-pitch-700"
-                                  : "text-slate-500",
-                              )}
-                            >
+                            <th key={m.userId} style={memberHead(m)}>
                               <div
-                                className="truncate max-w-[80px]"
-                                title={userName(m)}
+                                style={{
+                                  maxWidth: 60,
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                }}
                               >
                                 {userName(m).split(" ")[0]}
                               </div>
                               {m.isSimBot && (
-                                <div className="text-[10px] text-slate-300">
+                                <div style={{ fontSize: 8, opacity: 0.5 }}>
                                   🤖
                                 </div>
                               )}
@@ -264,91 +409,102 @@ export function CouponsView({
                       <tbody>
                         {group.matches.map((match, idx) => {
                           const actual = actualOutcome(match);
-                          const isFinished = match.status === "FINISHED";
+                          const finished = match.status === "FINISHED";
                           const tipsByUser = Object.fromEntries(
                             match.matchTips.map((t) => [t.userId, t]),
                           );
-
                           return (
                             <tr
                               key={match.id}
-                              className={cn(
-                                "border-b border-slate-50",
-                                idx % 2 === 0 ? "bg-white" : "bg-slate-50/30",
-                              )}
+                              style={{
+                                background:
+                                  idx % 2 === 0 ? "#fff" : "var(--cream)",
+                                borderBottom: "1px solid var(--hairline)",
+                              }}
                             >
                               {/* Match name */}
-                              <td className="px-3 py-2 sticky left-0 bg-inherit border-r border-slate-100">
-                                <div className="font-medium text-slate-800 text-xs">
-                                  {teamName(match.homeTeam, locale)}
-                                  <span className="text-slate-400 mx-1">
+                              <td
+                                style={{
+                                  padding: "9px 16px",
+                                  position: "sticky",
+                                  left: 0,
+                                  background:
+                                    idx % 2 === 0 ? "#fff" : "var(--cream)",
+                                  borderRight: "2px solid var(--hairline)",
+                                  zIndex: 1,
+                                  minWidth: 180,
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    fontFamily: "var(--f-serif)",
+                                    fontWeight: 600,
+                                    fontSize: 13,
+                                    color: "var(--ink)",
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  {tn(match.homeTeam, locale)}
+                                  <span
+                                    style={{
+                                      color: "var(--ink-faint)",
+                                      fontStyle: "italic",
+                                      margin: "0 6px",
+                                    }}
+                                  >
                                     vs
                                   </span>
-                                  {teamName(match.awayTeam, locale)}
+                                  {tn(match.awayTeam, locale)}
                                 </div>
-                                <div className="text-[10px] text-slate-400">
+                                <div
+                                  style={{
+                                    fontFamily: "var(--f-mono)",
+                                    fontSize: 9.5,
+                                    color: "var(--ink-faint)",
+                                    marginTop: 2,
+                                  }}
+                                >
                                   #{match.matchNumber}
                                 </div>
                               </td>
 
                               {/* Actual result */}
-                              <td className="px-2 py-2 text-center border-r border-slate-100">
-                                {isFinished ? (
-                                  <span className="font-bold text-slate-700 text-xs">
+                              <td
+                                style={{
+                                  padding: "9px 8px",
+                                  textAlign: "center",
+                                  borderRight: "2px solid var(--hairline)",
+                                  minWidth: 52,
+                                }}
+                              >
+                                {finished ? (
+                                  <div
+                                    style={{
+                                      fontFamily: "var(--f-mono)",
+                                      fontWeight: 700,
+                                      fontSize: 13,
+                                      color: "var(--ink)",
+                                    }}
+                                  >
                                     {match.homeScore}–{match.awayScore}
-                                    <div className="text-[10px] font-normal text-slate-400">
-                                      {actual ? outcomeLabel(actual) : ""}
-                                    </div>
-                                  </span>
+                                  </div>
                                 ) : (
-                                  <span className="text-slate-300 text-xs">
+                                  <span style={{ color: "var(--hairline)" }}>
                                     —
                                   </span>
                                 )}
                               </td>
 
-                              {/* Tips per user */}
-                              {sortedMembers.map((m) => {
-                                const tip = tipsByUser[m.userId];
-                                const isMe = m.userId === currentUserId;
-                                const correct =
-                                  tip && actual && tip.prediction === actual;
-                                const wrong =
-                                  tip && actual && tip.prediction !== actual;
-
-                                return (
-                                  <td
-                                    key={m.userId}
-                                    className={cn(
-                                      "px-2 py-2 text-center",
-                                      isMe && "bg-pitch-50/50",
-                                    )}
-                                  >
-                                    {tip ? (
-                                      <span
-                                        className={cn(
-                                          "inline-flex items-center justify-center w-7 h-7 rounded-lg text-sm font-bold",
-                                          correct &&
-                                            "bg-green-100 text-green-700",
-                                          wrong && "bg-red-100 text-red-600",
-                                          !actual &&
-                                            isMe &&
-                                            "bg-pitch-100 text-pitch-700",
-                                          !actual &&
-                                            !isMe &&
-                                            "bg-slate-100 text-slate-600",
-                                        )}
-                                      >
-                                        {outcomeLabel(tip.prediction)}
-                                      </span>
-                                    ) : (
-                                      <span className="text-slate-200 text-xs">
-                                        –
-                                      </span>
-                                    )}
-                                  </td>
-                                );
-                              })}
+                              {/* Tips */}
+                              {sortedMembers.map((m) => (
+                                <TipCell
+                                  key={m.userId}
+                                  tip={tipsByUser[m.userId]}
+                                  actual={actual}
+                                  isMe={m.userId === currentUserId}
+                                  finished={finished}
+                                />
+                              ))}
                             </tr>
                           );
                         })}
@@ -362,38 +518,46 @@ export function CouponsView({
         </div>
       )}
 
-      {/* ── ADVANCEMENT TAB ─────────────────────────────────────────── */}
+      {/* ── ADVANCEMENT ──────────────────────────────────────────── */}
       {tab === "advancement" && (
-        <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse">
+        <div
+          style={{
+            borderRadius: "var(--r-card)",
+            overflow: "hidden",
+            boxShadow: "var(--sh-card)",
+          }}
+        >
+          <div style={{ overflowX: "auto" }}>
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                fontSize: 13,
+              }}
+            >
               <thead>
-                <tr className="border-b border-slate-100 bg-slate-50">
-                  <th
-                    className="px-3 py-2 text-left font-medium text-slate-500
-                                 sticky left-0 bg-slate-50 min-w-[100px] border-r border-slate-100"
-                  >
+                <tr>
+                  <th style={{ ...stickyHead, minWidth: 80 }}>
                     {isSv ? "Grupp" : "Group"}
                   </th>
                   <th
-                    className="px-3 py-2 text-left font-medium text-slate-500
-                                 min-w-[160px] border-r border-slate-100"
+                    style={{
+                      ...stickyHead,
+                      left: "auto",
+                      position: "static",
+                      minWidth: 140,
+                    }}
                   >
                     {isSv ? "Facit" : "Actual"}
                   </th>
                   {sortedMembers.map((m) => (
-                    <th
-                      key={m.userId}
-                      className={cn(
-                        "px-2 py-2 text-center font-medium min-w-[100px]",
-                        m.userId === currentUserId
-                          ? "bg-pitch-50 text-pitch-700"
-                          : "text-slate-500",
-                      )}
-                    >
+                    <th key={m.userId} style={memberHead(m)}>
                       <div
-                        className="truncate max-w-[100px]"
-                        title={userName(m)}
+                        style={{
+                          maxWidth: 80,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
                       >
                         {userName(m).split(" ")[0]}
                       </div>
@@ -403,115 +567,152 @@ export function CouponsView({
               </thead>
               <tbody>
                 {groups.map((group, idx) => {
-                  const actualTeamIds = new Set(
+                  const actualIds = new Set(
                     group.actualAdvancements.map((a) => a.teamId),
                   );
-                  const advTipsByUser = Object.fromEntries(
+                  const tipsByUser = Object.fromEntries(
                     group.advancementTips.map((t) => [t.userId, t]),
                   );
-
                   return (
                     <tr
                       key={group.id}
-                      className={cn(
-                        "border-b border-slate-50",
-                        idx % 2 === 0 ? "bg-white" : "bg-slate-50/30",
-                      )}
+                      style={{
+                        background: idx % 2 === 0 ? "#fff" : "var(--cream)",
+                        borderBottom: "1px solid var(--hairline)",
+                      }}
                     >
-                      {/* Group name */}
-                      <td className="px-3 py-2 sticky left-0 bg-inherit border-r border-slate-100">
+                      {/* Group badge */}
+                      <td
+                        style={{
+                          padding: "12px 16px",
+                          position: "sticky",
+                          left: 0,
+                          background: idx % 2 === 0 ? "#fff" : "var(--cream)",
+                          borderRight: "2px solid var(--hairline)",
+                          zIndex: 1,
+                        }}
+                      >
                         <span
-                          className="inline-flex items-center justify-center w-6 h-6 rounded-full
-                                         bg-pitch-500 text-white text-xs font-bold"
+                          style={{
+                            display: "inline-flex",
+                            width: 24,
+                            height: 24,
+                            borderRadius: "50%",
+                            background: "var(--green-deep)",
+                            color: "var(--gold)",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontFamily: "var(--f-mono)",
+                            fontWeight: 700,
+                            fontSize: 11,
+                          }}
                         >
                           {group.name}
                         </span>
                       </td>
 
-                      {/* Actual advancing teams */}
-                      <td className="px-3 py-2 border-r border-slate-100">
+                      {/* Actual */}
+                      <td
+                        style={{
+                          padding: "12px 12px",
+                          borderRight: "2px solid var(--hairline)",
+                        }}
+                      >
                         {group.actualAdvancements.length >= 2 ? (
-                          <div className="space-y-0.5">
+                          <div style={{ display: "flex", gap: 6 }}>
                             {group.actualAdvancements
                               .sort((a, b) => a.position - b.position)
                               .map((adv) => (
-                                <div
+                                <span
                                   key={adv.teamId}
-                                  className="text-xs text-slate-700 flex items-center gap-1"
+                                  style={{
+                                    fontFamily: "var(--f-mono)",
+                                    fontSize: 10,
+                                    letterSpacing: "0.08em",
+                                    padding: "2px 6px",
+                                    borderRadius: 3,
+                                    background: "var(--green-pale)",
+                                    color: "var(--green-deep)",
+                                  }}
                                 >
-                                  <span className="text-slate-400">
-                                    {adv.position}.
-                                  </span>
-                                  {teamName(adv.team, locale)}
-                                </div>
+                                  {adv.team.fifaCode}
+                                </span>
                               ))}
                           </div>
                         ) : (
-                          <span className="text-slate-300 text-xs">—</span>
+                          <span
+                            style={{ color: "var(--hairline)", fontSize: 12 }}
+                          >
+                            —
+                          </span>
                         )}
                       </td>
 
                       {/* Tips per user */}
                       {sortedMembers.map((m) => {
-                        const tip = advTipsByUser[m.userId];
-                        const isMe = m.userId === currentUserId;
+                        const tip = tipsByUser[m.userId];
                         const hasActual = group.actualAdvancements.length >= 2;
-
-                        const score =
-                          tip && hasActual
-                            ? [tip.firstTeamId, tip.secondTeamId].filter((id) =>
-                                actualTeamIds.has(id),
-                              ).length
-                            : null;
-
+                        const isMe = m.userId === currentUserId;
                         return (
                           <td
                             key={m.userId}
-                            className={cn(
-                              "px-2 py-2",
-                              isMe && "bg-pitch-50/50",
-                            )}
+                            style={{
+                              padding: "8px 6px",
+                              textAlign: "center",
+                              background: isMe
+                                ? "rgba(203,162,88,0.06)"
+                                : "transparent",
+                              borderRight: "1px solid var(--hairline)",
+                            }}
                           >
                             {tip ? (
-                              <div className="space-y-0.5 text-xs">
-                                {[tip.firstTeam, tip.secondTeam].map(
-                                  (team, i) => {
-                                    const isCorrect =
-                                      hasActual && actualTeamIds.has(team.id);
-                                    const isWrong =
-                                      hasActual && !actualTeamIds.has(team.id);
-                                    return (
-                                      <div
-                                        key={team.id}
-                                        className={cn(
-                                          "flex items-center gap-1 px-1.5 py-0.5 rounded",
-                                          isCorrect &&
-                                            "bg-green-100 text-green-700",
-                                          isWrong && "bg-red-50 text-red-500",
-                                          !hasActual && "text-slate-600",
-                                        )}
-                                      >
-                                        <span className="text-slate-400">
-                                          {i + 1}.
-                                        </span>
-                                        <span
-                                          className="truncate max-w-[70px]"
-                                          title={teamName(team, locale)}
-                                        >
-                                          {team.fifaCode}
-                                        </span>
-                                      </div>
-                                    );
-                                  },
-                                )}
-                                {score !== null && (
-                                  <div className="text-center text-[10px] font-bold text-slate-500">
-                                    {score}/2
-                                  </div>
-                                )}
+                              <div
+                                style={{
+                                  display: "flex",
+                                  flexDirection: "column",
+                                  gap: 2,
+                                }}
+                              >
+                                {[tip.firstTeam, tip.secondTeam].map((team) => {
+                                  const correct =
+                                    hasActual && actualIds.has(team.id);
+                                  const wrong =
+                                    hasActual && !actualIds.has(team.id);
+                                  return (
+                                    <span
+                                      key={team.id}
+                                      style={{
+                                        fontFamily: "var(--f-mono)",
+                                        fontSize: 9.5,
+                                        letterSpacing: "0.08em",
+                                        padding: "2px 5px",
+                                        borderRadius: 3,
+                                        background: correct
+                                          ? "var(--gold)"
+                                          : wrong
+                                            ? "rgba(156,42,31,0.08)"
+                                            : "var(--cream)",
+                                        color: correct
+                                          ? "var(--green-deep)"
+                                          : wrong
+                                            ? "var(--stamp-red)"
+                                            : "var(--ink-soft)",
+                                      }}
+                                    >
+                                      {team.fifaCode}
+                                    </span>
+                                  );
+                                })}
                               </div>
                             ) : (
-                              <span className="text-slate-200 text-xs">–</span>
+                              <span
+                                style={{
+                                  color: "var(--hairline)",
+                                  fontSize: 12,
+                                }}
+                              >
+                                —
+                              </span>
                             )}
                           </td>
                         );
@@ -525,35 +726,40 @@ export function CouponsView({
         </div>
       )}
 
-      {/* ── TOURNAMENT TAB ─────────────────────────────────────────── */}
+      {/* ── TOURNAMENT ───────────────────────────────────────────── */}
       {tab === "tournament" && (
-        <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse">
+        <div
+          style={{
+            borderRadius: "var(--r-card)",
+            overflow: "hidden",
+            boxShadow: "var(--sh-card)",
+          }}
+        >
+          <div style={{ overflowX: "auto" }}>
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                fontSize: 13,
+              }}
+            >
               <thead>
-                <tr className="border-b border-slate-100 bg-slate-50">
-                  <th
-                    className="px-3 py-2 text-left font-medium text-slate-500
-                                 sticky left-0 bg-slate-50 min-w-[120px] border-r border-slate-100"
-                  >
+                <tr>
+                  <th style={{ ...stickyHead, minWidth: 100 }}>
                     {isSv ? "Tips" : "Tip"}
                   </th>
                   <th
-                    className="px-3 py-2 text-left font-medium text-slate-500
-                                 min-w-[140px] border-r border-slate-100"
+                    style={{
+                      ...stickyHead,
+                      left: "auto",
+                      position: "static",
+                      minWidth: 120,
+                    }}
                   >
                     {isSv ? "Facit" : "Actual"}
                   </th>
                   {sortedMembers.map((m) => (
-                    <th
-                      key={m.userId}
-                      className={cn(
-                        "px-2 py-2 text-center font-medium min-w-[100px]",
-                        m.userId === currentUserId
-                          ? "bg-pitch-50 text-pitch-700"
-                          : "text-slate-500",
-                      )}
-                    >
+                    <th key={m.userId} style={memberHead(m)}>
                       {userName(m).split(" ")[0]}
                     </th>
                   ))}
@@ -561,123 +767,190 @@ export function CouponsView({
               </thead>
               <tbody>
                 {/* Finalists row */}
-                <tr className="border-b border-slate-50 bg-white">
-                  <td className="px-3 py-3 sticky left-0 bg-white border-r border-slate-100 font-medium text-slate-600 text-xs">
-                    {isSv ? "Finallag" : "Finalists"}
-                  </td>
-                  <td className="px-3 py-3 border-r border-slate-100">
-                    {tournamentActual ? (
-                      <div className="text-xs space-y-0.5">
-                        <div className="text-slate-700">
-                          {teamName(tournamentActual.finalist1, locale)}
-                        </div>
-                        <div className="text-slate-400 text-[10px]">vs</div>
-                        <div className="text-slate-700">
-                          {teamName(tournamentActual.finalist2, locale)}
-                        </div>
-                      </div>
-                    ) : (
-                      <span className="text-slate-300 text-xs">—</span>
-                    )}
-                  </td>
-                  {sortedMembers.map((m) => {
-                    const tip = tournamentTips.find(
-                      (t) => t.userId === m.userId,
-                    );
-                    const isMe = m.userId === currentUserId;
-                    const actualFinalistIds = tournamentActual
-                      ? new Set([
-                          tournamentActual.finalist1.id,
-                          tournamentActual.finalist2.id,
-                        ])
-                      : null;
-
-                    return (
+                {[
+                  { label: isSv ? "Finallag" : "Finalists", isWinner: false },
+                  { label: isSv ? "🏆 Vinnare" : "🏆 Winner", isWinner: true },
+                ].map(({ label, isWinner }, rowIdx) => {
+                  const actualFinalistIds = tournamentActual
+                    ? new Set([
+                        tournamentActual.finalist1.id,
+                        tournamentActual.finalist2.id,
+                      ])
+                    : null;
+                  return (
+                    <tr
+                      key={rowIdx}
+                      style={{
+                        background: rowIdx % 2 === 0 ? "#fff" : "var(--cream)",
+                        borderBottom: "1px solid var(--hairline)",
+                      }}
+                    >
                       <td
-                        key={m.userId}
-                        className={cn("px-2 py-3", isMe && "bg-pitch-50/50")}
+                        style={{
+                          padding: "12px 16px",
+                          position: "sticky",
+                          left: 0,
+                          background:
+                            rowIdx % 2 === 0 ? "#fff" : "var(--cream)",
+                          borderRight: "2px solid var(--hairline)",
+                          zIndex: 1,
+                          fontFamily: "var(--f-mono)",
+                          fontSize: 10.5,
+                          letterSpacing: "0.1em",
+                          textTransform: "uppercase",
+                          color: "var(--ink-soft)",
+                        }}
                       >
-                        {tip ? (
-                          <div className="text-xs space-y-0.5">
-                            {[tip.finalist1, tip.finalist2].map((team) => {
-                              const correct = actualFinalistIds?.has(team.id);
-                              const wrong =
-                                actualFinalistIds &&
-                                !actualFinalistIds.has(team.id);
-                              return (
-                                <div
-                                  key={team.id}
-                                  className={cn(
-                                    "px-1.5 py-0.5 rounded truncate max-w-[90px]",
-                                    correct && "bg-green-100 text-green-700",
-                                    wrong && "bg-red-50 text-red-500",
-                                    !actualFinalistIds && "text-slate-600",
-                                  )}
-                                  title={teamName(team, locale)}
-                                >
-                                  {team.fifaCode}
-                                </div>
-                              );
-                            })}
+                        {label}
+                      </td>
+                      <td
+                        style={{
+                          padding: "12px 12px",
+                          borderRight: "2px solid var(--hairline)",
+                        }}
+                      >
+                        {tournamentActual ? (
+                          <div
+                            style={{
+                              fontFamily: "var(--f-mono)",
+                              fontSize: 10,
+                              color: "var(--green-deep)",
+                            }}
+                          >
+                            {isWinner
+                              ? tournamentActual.winner.fifaCode
+                              : `${tournamentActual.finalist1.fifaCode} / ${tournamentActual.finalist2.fifaCode}`}
                           </div>
                         ) : (
-                          <span className="text-slate-200 text-xs">–</span>
+                          <span style={{ color: "var(--hairline)" }}>—</span>
                         )}
                       </td>
-                    );
-                  })}
-                </tr>
+                      {sortedMembers.map((m) => {
+                        const tip = tournamentTips.find(
+                          (t) => t.userId === m.userId,
+                        );
+                        const isMe = m.userId === currentUserId;
+                        if (!tip)
+                          return (
+                            <td
+                              key={m.userId}
+                              style={{
+                                padding: "12px 6px",
+                                textAlign: "center",
+                                background: isMe
+                                  ? "rgba(203,162,88,0.06)"
+                                  : "transparent",
+                                borderRight: "1px solid var(--hairline)",
+                              }}
+                            >
+                              <span style={{ color: "var(--hairline)" }}>
+                                —
+                              </span>
+                            </td>
+                          );
 
-                {/* Winner row */}
-                <tr className="bg-slate-50/30">
-                  <td className="px-3 py-3 sticky left-0 bg-slate-50/30 border-r border-slate-100 font-medium text-slate-600 text-xs">
-                    🏆 {isSv ? "Vinnare" : "Winner"}
-                  </td>
-                  <td className="px-3 py-3 border-r border-slate-100">
-                    {tournamentActual ? (
-                      <span className="text-xs font-bold text-gold-500">
-                        {teamName(tournamentActual.winner, locale)}
-                      </span>
-                    ) : (
-                      <span className="text-slate-300 text-xs">—</span>
-                    )}
-                  </td>
-                  {sortedMembers.map((m) => {
-                    const tip = tournamentTips.find(
-                      (t) => t.userId === m.userId,
-                    );
-                    const isMe = m.userId === currentUserId;
-                    const correct =
-                      tournamentActual &&
-                      tip?.winner.id === tournamentActual.winner.id;
-                    const wrong =
-                      tournamentActual &&
-                      tip &&
-                      tip.winner.id !== tournamentActual.winner.id;
+                        if (isWinner) {
+                          const correct =
+                            tournamentActual?.winner.id === tip.winner.id;
+                          const wrong = tournamentActual && !correct;
+                          return (
+                            <td
+                              key={m.userId}
+                              style={{
+                                padding: "12px 6px",
+                                textAlign: "center",
+                                background: isMe
+                                  ? "rgba(203,162,88,0.06)"
+                                  : "transparent",
+                                borderRight: "1px solid var(--hairline)",
+                              }}
+                            >
+                              <span
+                                style={{
+                                  fontFamily: "var(--f-mono)",
+                                  fontSize: 10,
+                                  padding: "2px 6px",
+                                  borderRadius: 3,
+                                  background: correct
+                                    ? "var(--gold)"
+                                    : wrong
+                                      ? "rgba(156,42,31,0.08)"
+                                      : "var(--cream)",
+                                  color: correct
+                                    ? "var(--green-deep)"
+                                    : wrong
+                                      ? "var(--stamp-red)"
+                                      : "var(--ink-soft)",
+                                }}
+                              >
+                                {tip.winner.fifaCode}
+                              </span>
+                            </td>
+                          );
+                        }
 
-                    return (
-                      <td
-                        key={m.userId}
-                        className={cn("px-2 py-3", isMe && "bg-pitch-50/50")}
-                      >
-                        {tip ? (
-                          <span
-                            className={cn(
-                              "text-xs font-semibold px-1.5 py-0.5 rounded",
-                              correct && "bg-green-100 text-green-700",
-                              wrong && "bg-red-50 text-red-500",
-                              !tournamentActual && "text-slate-600",
-                            )}
+                        // Finalists
+                        const f1correct = actualFinalistIds?.has(
+                          tip.finalist1.id,
+                        );
+                        const f2correct = actualFinalistIds?.has(
+                          tip.finalist2.id,
+                        );
+                        return (
+                          <td
+                            key={m.userId}
+                            style={{
+                              padding: "8px 6px",
+                              textAlign: "center",
+                              background: isMe
+                                ? "rgba(203,162,88,0.06)"
+                                : "transparent",
+                              borderRight: "1px solid var(--hairline)",
+                            }}
                           >
-                            {tip.winner.fifaCode}
-                          </span>
-                        ) : (
-                          <span className="text-slate-200 text-xs">–</span>
-                        )}
-                      </td>
-                    );
-                  })}
-                </tr>
+                            <div
+                              style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: 2,
+                                alignItems: "center",
+                              }}
+                            >
+                              {[
+                                { team: tip.finalist1, correct: f1correct },
+                                { team: tip.finalist2, correct: f2correct },
+                              ].map(({ team, correct }) => (
+                                <span
+                                  key={team.id}
+                                  style={{
+                                    fontFamily: "var(--f-mono)",
+                                    fontSize: 9.5,
+                                    padding: "2px 5px",
+                                    borderRadius: 3,
+                                    background:
+                                      correct === true
+                                        ? "var(--gold)"
+                                        : correct === false && actualFinalistIds
+                                          ? "rgba(156,42,31,0.08)"
+                                          : "var(--cream)",
+                                    color:
+                                      correct === true
+                                        ? "var(--green-deep)"
+                                        : correct === false && actualFinalistIds
+                                          ? "var(--stamp-red)"
+                                          : "var(--ink-soft)",
+                                  }}
+                                >
+                                  {team.fifaCode}
+                                </span>
+                              ))}
+                            </div>
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -685,19 +958,51 @@ export function CouponsView({
       )}
 
       {/* Legend */}
-      <div className="flex gap-4 text-xs text-slate-400 justify-end">
-        <span className="flex items-center gap-1">
-          <span className="inline-block w-4 h-4 rounded bg-green-100" />{" "}
-          {isSv ? "Rätt" : "Correct"}
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="inline-block w-4 h-4 rounded bg-red-50" />{" "}
-          {isSv ? "Fel" : "Wrong"}
-        </span>
-        <span className="flex items-center gap-1">
-          <span className="inline-block w-4 h-4 rounded bg-slate-100" />{" "}
-          {isSv ? "Väntar" : "Pending"}
-        </span>
+      <div style={{ display: "flex", gap: 20, justifyContent: "flex-end" }}>
+        {[
+          {
+            bg: "var(--gold)",
+            color: "var(--green-deep)",
+            label: isSv ? "Rätt" : "Correct",
+          },
+          {
+            bg: "rgba(156,42,31,0.08)",
+            color: "var(--stamp-red)",
+            label: isSv ? "Fel" : "Wrong",
+          },
+          {
+            bg: "var(--cream)",
+            color: "var(--ink-soft)",
+            label: isSv ? "Väntar" : "Pending",
+          },
+        ].map(({ bg, color, label }) => (
+          <div
+            key={label}
+            style={{ display: "flex", alignItems: "center", gap: 6 }}
+          >
+            <span
+              style={{
+                display: "inline-block",
+                width: 14,
+                height: 14,
+                borderRadius: 2,
+                background: bg,
+                border: "1px solid var(--hairline)",
+              }}
+            />
+            <span
+              style={{
+                fontFamily: "var(--f-mono)",
+                fontSize: 10,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color: "var(--ink-faint)",
+              }}
+            >
+              {label}
+            </span>
+          </div>
+        ))}
       </div>
     </div>
   );
