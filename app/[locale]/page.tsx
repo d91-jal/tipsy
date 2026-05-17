@@ -1,142 +1,201 @@
-// app/[locale]/page.tsx
-import { getTranslations } from "next-intl/server";
+// app/[locale]/page.tsx  — Fas 3 redesign
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { Link } from "@/i18n/routing";
-import { formatDate } from "@/lib/utils";
 
 export default async function HomePage({
   params: { locale },
 }: {
   params: { locale: string };
 }) {
-  const t = await getTranslations();
   const session = await auth();
+  const isSv = locale === "sv";
 
   const tournament = await prisma.tournament.findUnique({
     where: { slug: "wc2026" },
     select: { nameSv: true, nameEn: true, startDate: true, oddsLockDate: true },
   });
 
-  const tournamentName = locale === "sv" ? tournament?.nameSv : tournament?.nameEn;
   const now = new Date();
   const lockDate = tournament?.oddsLockDate;
-  const startDate = tournament?.startDate;
   const isLocked = lockDate ? now > lockDate : false;
   const daysUntilLock = lockDate
     ? Math.max(0, Math.ceil((lockDate.getTime() - now.getTime()) / 86400000))
     : null;
 
-  const tipSections = [
+  const sections = [
     {
       href: "/tips/group-stage" as const,
-      labelKey: "tips.groupStage" as const,
-      icon: "⚽",
-      description: locale === "sv"
-        ? "Tippa 1X2 på alla 72 gruppspelsmatcher"
-        : "Predict 1X2 for all 72 group stage matches",
+      eyebrow: isSv ? "72 matcher" : "72 matches",
+      title: isSv ? "Gruppspel" : "Group Stage",
+      sub: isSv ? "1X2 på varje match" : "1X2 on every match",
     },
     {
       href: "/tips/advancement" as const,
-      labelKey: "tips.advancement" as const,
-      icon: "🏆",
-      description: locale === "sv"
-        ? "Vilka lag tar sig vidare från varje grupp?"
-        : "Which teams advance from each group?",
+      eyebrow: isSv ? "12 grupper" : "12 groups",
+      title: isSv ? "Avancemang" : "Advancement",
+      sub: isSv ? "Vilka 2 lag går vidare?" : "Which 2 teams advance?",
     },
     {
       href: "/tips/knockout" as const,
-      labelKey: "tips.knockout" as const,
-      icon: "⚔️",
-      description: locale === "sv"
-        ? "Tippa slutspelsmatcherna — låses löpande"
-        : "Predict knockout matches — locked per match",
+      eyebrow: isSv ? "32 matcher" : "32 matches",
+      title: isSv ? "Slutspel" : "Knockout",
+      sub: isSv ? "Öppnas löpande" : "Opens progressively",
     },
     {
       href: "/tips/tournament" as const,
-      labelKey: "tips.tournament" as const,
-      icon: "🥇",
-      description: locale === "sv"
-        ? "Vilka lag spelar finalen och vem vinner VM?"
-        : "Who plays the final and who wins the World Cup?",
+      eyebrow: isSv ? "Final" : "Final",
+      title: isSv ? "Vinnare" : "Winner",
+      sub: isSv ? "Finallag och mästare" : "Finalists and champion",
     },
   ];
 
   return (
-    <div className="space-y-8">
+    <div>
       {/* Hero */}
-      <div className="rounded-2xl bg-gradient-to-br from-pitch-600 to-pitch-700 p-8 text-white shadow-lg">
-        <div className="text-5xl mb-3">🏆</div>
-        <h1 className="text-3xl font-bold mb-1">{tournamentName}</h1>
-        {startDate && (
-          <p className="text-pitch-50 text-sm">
-            {locale === "sv" ? "Turnering startar" : "Tournament starts"}:{" "}
-            <strong>{formatDate(startDate, locale)}</strong>
-          </p>
-        )}
-        {!isLocked && daysUntilLock !== null && (
-          <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-white/20 px-4 py-1.5 text-sm font-medium">
-            ⏰{" "}
-            {locale === "sv"
-              ? `Tips för gruppspelet stänger om ${daysUntilLock} dag${daysUntilLock !== 1 ? "ar" : ""}`
-              : `Group tips close in ${daysUntilLock} day${daysUntilLock !== 1 ? "s" : ""}`}
+      <div
+        style={{ paddingBottom: 56, borderBottom: "1px solid var(--hairline)" }}
+      >
+        <div
+          style={{
+            marginBottom: 22,
+            display: "flex",
+            alignItems: "center",
+            gap: 14,
+          }}
+        >
+          <span
+            style={{
+              display: "inline-block",
+              width: 28,
+              height: 1,
+              background: "var(--ink-faint)",
+            }}
+          />
+          <span className="eyebrow">
+            {isLocked
+              ? isSv
+                ? "Tips stängda · VM 2026"
+                : "Tips closed · WC 2026"
+              : daysUntilLock !== null
+                ? isSv
+                  ? `Stänger om ${daysUntilLock} dagar · VM 2026`
+                  : `Closes in ${daysUntilLock} days · WC 2026`
+                : "VM 2026"}
+          </span>
+        </div>
+
+        <h1
+          style={{
+            fontFamily: "var(--f-display)",
+            fontWeight: 600,
+            fontSize: "clamp(40px, 6vw, 76px)",
+            margin: "0 0 24px",
+            letterSpacing: "-0.025em",
+            lineHeight: 1.0,
+            color: "var(--green-deep)",
+          }}
+        >
+          {isSv ? "Tipset på " : "Predictions for "}
+          <span style={{ fontStyle: "italic", color: "var(--green)" }}>
+            {isSv ? "världsmästerskapet." : "the World Cup."}
+          </span>
+        </h1>
+
+        <p
+          style={{
+            fontSize: 18,
+            lineHeight: 1.6,
+            color: "var(--ink-soft)",
+            maxWidth: 540,
+            margin: "0 0 36px",
+            letterSpacing: "-0.01em",
+          }}
+        >
+          {isSv
+            ? "Tippa 1X2 på varje match. Poäng baserat på verkliga odds. Tävla mot dina vänner."
+            : "Predict 1X2 on every match. Points based on real odds. Compete with your friends."}
+        </p>
+
+        {session ? (
+          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+            <Link
+              href="/tips/group-stage"
+              className="btn btn-primary btn-lg"
+              style={{ fontFamily: "var(--f-sans)" }}
+            >
+              {isSv ? "Fyll i kupong →" : "Fill in coupon →"}
+            </Link>
+            <Link
+              href="/competitions"
+              style={{
+                fontFamily: "var(--f-mono)",
+                fontSize: 11,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: "var(--ink-soft)",
+                textDecoration: "none",
+              }}
+            >
+              {isSv ? "Se ställning" : "View standings"}
+            </Link>
           </div>
-        )}
-        {isLocked && (
-          <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-white/20 px-4 py-1.5 text-sm font-medium">
-            🔒 {locale === "sv" ? "Grupptips är stängda" : "Group tips are closed"}
-          </div>
+        ) : (
+          <Link
+            href="/auth/login"
+            className="btn btn-primary btn-lg"
+            style={{ fontFamily: "var(--f-sans)" }}
+          >
+            {isSv ? "Logga in och tippa →" : "Log in and predict →"}
+          </Link>
         )}
       </div>
 
-      {/* Tip sections grid */}
-      {session ? (
-        <>
-          <h2 className="text-xl font-semibold text-slate-700">
-            {locale === "sv" ? "Dina tipskategorier" : "Your tip categories"}
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {tipSections.map((section) => (
+      {/* Sections grid */}
+      {session && (
+        <div style={{ paddingTop: 48 }}>
+          <div style={{ marginBottom: 28 }}>
+            <p className="eyebrow">
+              {isSv ? "Tipskategorier" : "Tip categories"}
+            </p>
+          </div>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+              gap: 2,
+            }}
+          >
+            {sections.map((s) => (
               <Link
-                key={section.href}
-                href={section.href}
-                className="group flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-5 shadow-sm
-                           hover:border-pitch-500 hover:shadow-md transition-all"
+                key={s.href}
+                href={s.href}
+                style={{ textDecoration: "none" }}
               >
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">{section.icon}</span>
-                  <span className="font-semibold text-slate-800 group-hover:text-pitch-600">
-                    {t(section.labelKey)}
-                  </span>
+                <div className="section-link" style={{ color: "inherit" }}>
+                  <div className="eyebrow" style={{ marginBottom: 10 }}>
+                    {s.eyebrow}
+                  </div>
+                  <div
+                    style={{
+                      fontFamily: "var(--f-display)",
+                      fontWeight: 600,
+                      fontSize: 26,
+                      letterSpacing: "-0.02em",
+                      color: "var(--green-deep)",
+                      marginBottom: 6,
+                    }}
+                  >
+                    {s.title}
+                  </div>
+                  <div style={{ fontSize: 14, color: "var(--ink-soft)" }}>
+                    {s.sub}
+                  </div>
                 </div>
-                <p className="text-sm text-slate-500">{section.description}</p>
               </Link>
             ))}
           </div>
-          <div className="text-center">
-            <Link
-              href="/standings"
-              className="inline-flex items-center gap-2 rounded-lg bg-pitch-500 px-6 py-3 font-semibold text-white
-                         hover:bg-pitch-600 transition-colors"
-            >
-              📊 {t("standings.title")}
-            </Link>
-          </div>
-        </>
-      ) : (
-        <div className="text-center py-12 space-y-4">
-          <p className="text-slate-600 text-lg">
-            {locale === "sv"
-              ? "Logga in för att börja tippa!"
-              : "Log in to start predicting!"}
-          </p>
-          <Link
-            href="/auth/login"
-            className="inline-flex items-center gap-2 rounded-lg bg-pitch-500 px-6 py-3 font-semibold text-white
-                       hover:bg-pitch-600 transition-colors"
-          >
-            {t("auth.login")}
-          </Link>
         </div>
       )}
     </div>

@@ -31,27 +31,24 @@ export function isDeadlinePassed(deadline: Date | string): boolean {
 
 export function outcomeLabel(
   outcome: "HOME" | "DRAW" | "AWAY",
-  locale = "sv"
+  locale = "sv",
 ): string {
   const labels = {
-    sv: { HOME: "1", DRAW: "X", AWAY: "2" },
-    en: { HOME: "1", DRAW: "X", AWAY: "2" },
+    sv: { HOME: "1", DRAW: "x", AWAY: "2" },
+    en: { HOME: "1", DRAW: "x", AWAY: "2" },
   };
   return labels[locale as keyof typeof labels]?.[outcome] ?? outcome;
 }
 
-export function stageLabel(
-  stage: string,
-  locale = "sv"
-): string {
+export function stageLabel(stage: string, locale = "sv"): string {
   const labels: Record<string, { sv: string; en: string }> = {
-    GROUP:          { sv: "Gruppspel",   en: "Group Stage" },
-    ROUND_OF_32:    { sv: "Omgång 32",   en: "Round of 32" },
-    ROUND_OF_16:    { sv: "Omgång 16",   en: "Round of 16" },
-    QUARTER_FINAL:  { sv: "Kvartsfinal", en: "Quarter-final" },
-    SEMI_FINAL:     { sv: "Semifinal",   en: "Semi-final" },
-    THIRD_PLACE:    { sv: "Bronsmatch",  en: "Third place" },
-    FINAL:          { sv: "Final",       en: "Final" },
+    GROUP: { sv: "Gruppspel", en: "Group Stage" },
+    ROUND_OF_32: { sv: "Omgång 32", en: "Round of 32" },
+    ROUND_OF_16: { sv: "Omgång 16", en: "Round of 16" },
+    QUARTER_FINAL: { sv: "Kvartsfinal", en: "Quarter-final" },
+    SEMI_FINAL: { sv: "Semifinal", en: "Semi-final" },
+    THIRD_PLACE: { sv: "Bronsmatch", en: "Third place" },
+    FINAL: { sv: "Final", en: "Final" },
   };
   return labels[stage]?.[locale as "sv" | "en"] ?? stage;
 }

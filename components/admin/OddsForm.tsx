@@ -24,7 +24,15 @@ function buildInitialSources(existing: number | null): OddsSource[] {
   return DEFAULT_SOURCES.map((name) => ({ name, value: "" }));
 }
 
-export function OddsForm({ match, locale, adminId }: { match: MatchWithOdds; locale: string; adminId: string }) {
+export function OddsForm({
+  match,
+  locale,
+  adminId,
+}: {
+  match: MatchWithOdds;
+  locale: string;
+  adminId: string;
+}) {
   const existingByOutcome = {
     HOME: match.odds.find((o) => o.outcome === "HOME"),
     DRAW: match.odds.find((o) => o.outcome === "DRAW"),
@@ -32,16 +40,24 @@ export function OddsForm({ match, locale, adminId }: { match: MatchWithOdds; loc
   };
 
   const [sources, setSources] = useState<Record<OutcomeKey, OddsSource[]>>({
-    HOME: buildInitialSources(existingByOutcome.HOME ? Number(existingByOutcome.HOME.avgValue) : null),
-    DRAW: buildInitialSources(existingByOutcome.DRAW ? Number(existingByOutcome.DRAW.avgValue) : null),
-    AWAY: buildInitialSources(existingByOutcome.AWAY ? Number(existingByOutcome.AWAY.avgValue) : null),
+    HOME: buildInitialSources(
+      existingByOutcome.HOME ? Number(existingByOutcome.HOME.avgValue) : null,
+    ),
+    DRAW: buildInitialSources(
+      existingByOutcome.DRAW ? Number(existingByOutcome.DRAW.avgValue) : null,
+    ),
+    AWAY: buildInitialSources(
+      existingByOutcome.AWAY ? Number(existingByOutcome.AWAY.avgValue) : null,
+    ),
   });
   const [expanded, setExpanded] = useState(false);
   const [saved, setSaved] = useState(match.odds.length === 3);
   const [isPending, startTransition] = useTransition();
 
-  const homeName = locale === "sv" ? match.homeTeam?.nameSv : match.homeTeam?.nameEn;
-  const awayName = locale === "sv" ? match.awayTeam?.nameSv : match.awayTeam?.nameEn;
+  const homeName =
+    locale === "sv" ? match.homeTeam?.nameSv : match.homeTeam?.nameEn;
+  const awayName =
+    locale === "sv" ? match.awayTeam?.nameSv : match.awayTeam?.nameEn;
 
   function calcAvg(outcome: OutcomeKey): number {
     const vals = sources[outcome]
@@ -50,11 +66,18 @@ export function OddsForm({ match, locale, adminId }: { match: MatchWithOdds; loc
     return vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
   }
 
-  function updateSource(outcome: OutcomeKey, idx: number, field: keyof OddsSource, val: string) {
+  function updateSource(
+    outcome: OutcomeKey,
+    idx: number,
+    field: keyof OddsSource,
+    val: string,
+  ) {
     setSaved(false);
     setSources((prev) => ({
       ...prev,
-      [outcome]: prev[outcome].map((s, i) => i === idx ? { ...s, [field]: val } : s),
+      [outcome]: prev[outcome].map((s, i) =>
+        i === idx ? { ...s, [field]: val } : s,
+      ),
     }));
   }
 
@@ -68,11 +91,23 @@ export function OddsForm({ match, locale, adminId }: { match: MatchWithOdds; loc
   async function handleSave() {
     const fd = new FormData();
     fd.append("matchId", match.id);
-    fd.append("sources", JSON.stringify({
-      HOME: sources.HOME.map((s) => ({ name: s.name, value: parseFloat(s.value) })).filter((s) => !isNaN(s.value) && s.value > 0),
-      DRAW: sources.DRAW.map((s) => ({ name: s.name, value: parseFloat(s.value) })).filter((s) => !isNaN(s.value) && s.value > 0),
-      AWAY: sources.AWAY.map((s) => ({ name: s.name, value: parseFloat(s.value) })).filter((s) => !isNaN(s.value) && s.value > 0),
-    }));
+    fd.append(
+      "sources",
+      JSON.stringify({
+        HOME: sources.HOME.map((s) => ({
+          name: s.name,
+          value: parseFloat(s.value),
+        })).filter((s) => !isNaN(s.value) && s.value > 0),
+        DRAW: sources.DRAW.map((s) => ({
+          name: s.name,
+          value: parseFloat(s.value),
+        })).filter((s) => !isNaN(s.value) && s.value > 0),
+        AWAY: sources.AWAY.map((s) => ({
+          name: s.name,
+          value: parseFloat(s.value),
+        })).filter((s) => !isNaN(s.value) && s.value > 0),
+      }),
+    );
     startTransition(async () => {
       await setMatchOdds(fd);
       setSaved(true);
@@ -82,15 +117,17 @@ export function OddsForm({ match, locale, adminId }: { match: MatchWithOdds; loc
 
   const outcomes: { key: OutcomeKey; label: string }[] = [
     { key: "HOME", label: "1" },
-    { key: "DRAW", label: "X" },
+    { key: "DRAW", label: "x" },
     { key: "AWAY", label: "2" },
   ];
 
   return (
-    <div className={cn(
-      "rounded-xl border bg-white transition-all",
-      saved ? "border-green-200" : "border-slate-200"
-    )}>
+    <div
+      className={cn(
+        "rounded-xl border bg-white transition-all",
+        saved ? "border-green-200" : "border-slate-200",
+      )}
+    >
       {/* Summary row — always visible */}
       <button
         className="w-full flex items-center gap-3 p-3 text-left"
@@ -98,14 +135,20 @@ export function OddsForm({ match, locale, adminId }: { match: MatchWithOdds; loc
       >
         <span className="text-xs text-slate-400 w-8">#{match.matchNumber}</span>
         <span className="text-sm font-medium text-slate-700 flex-1">
-          {homeName} <span className="text-slate-400 font-normal">vs</span> {awayName}
+          {homeName} <span className="text-slate-400 font-normal">vs</span>{" "}
+          {awayName}
         </span>
         {outcomes.map(({ key, label }) => {
           const avg = calcAvg(key);
           return (
             <span key={key} className="text-xs text-slate-500">
               <span className="text-slate-400">{label}:</span>{" "}
-              <span className={cn("font-mono", avg > 0 ? "text-slate-700" : "text-slate-300")}>
+              <span
+                className={cn(
+                  "font-mono",
+                  avg > 0 ? "text-slate-700" : "text-slate-300",
+                )}
+              >
                 {avg > 0 ? avg.toFixed(2) : "–"}
               </span>
             </span>
@@ -122,20 +165,31 @@ export function OddsForm({ match, locale, adminId }: { match: MatchWithOdds; loc
             {outcomes.map(({ key, label }) => (
               <div key={key} className="space-y-2">
                 <div className="text-sm font-semibold text-slate-600">
-                  {label} — {key === "HOME" ? homeName : key === "AWAY" ? awayName : (locale === "sv" ? "Oavgjort" : "Draw")}
+                  {label} —{" "}
+                  {key === "HOME"
+                    ? homeName
+                    : key === "AWAY"
+                      ? awayName
+                      : locale === "sv"
+                        ? "Oavgjort"
+                        : "Draw"}
                 </div>
                 {sources[key].map((src, idx) => (
                   <div key={idx} className="flex gap-1">
                     <Input
                       placeholder={locale === "sv" ? "Källa" : "Source"}
                       value={src.name}
-                      onChange={(e) => updateSource(key, idx, "name", e.target.value)}
+                      onChange={(e) =>
+                        updateSource(key, idx, "name", e.target.value)
+                      }
                       className="text-xs"
                     />
                     <Input
                       placeholder="2.50"
                       value={src.value}
-                      onChange={(e) => updateSource(key, idx, "value", e.target.value)}
+                      onChange={(e) =>
+                        updateSource(key, idx, "value", e.target.value)
+                      }
                       className="w-20 text-xs font-mono"
                       type="number"
                       step="0.01"

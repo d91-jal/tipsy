@@ -1,39 +1,398 @@
+/* app/globals.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    --radius: 0.5rem;
-    --background: 248 250 252;
-    --foreground: 15 23 42;
-    --card: 255 255 255;
-    --card-foreground: 15 23 42;
-    --border: 226 232 240;
-    --input: 226 232 240;
-    --primary: 22 163 74;
-    --primary-foreground: 255 255 255;
-    --muted: 241 245 249;
-    --muted-foreground: 100 116 139;
-    --accent: 241 245 249;
-    --accent-foreground: 15 23 42;
-    --destructive: 220 38 38;
-    --destructive-foreground: 255 255 255;
-    --ring: 22 163 74;
-  }
+/* ─── Google Fonts ─────────────────────────────────────────────────────────── */
+@import url("https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Caveat:wght@500;700&display=swap");
+
+/* ─── Tipsy Design Tokens ──────────────────────────────────────────────────── */
+:root {
+  /* Paper */
+  --cream: #f2f0eb;
+  --ceramic: #edebe9;
+  --paper: #f7f4ec;
+
+  /* Coupon */
+  --coupon-bg: #f4ecd8;
+  --coupon-ink: #1a1a1a;
+  --coupon-rule: #c9a86a;
+  --coupon-rule-soft: #d9c4a0;
+
+  /* Ink */
+  --ink: rgba(20, 24, 22, 0.92);
+  --ink-soft: rgba(20, 24, 22, 0.58);
+  --ink-faint: rgba(20, 24, 22, 0.32);
+  --hairline: rgba(20, 24, 22, 0.14);
+
+  /* Green */
+  --green: #006241;
+  --green-cta: #00754a;
+  --green-deep: #1e3932;
+  --green-uplift: #2b5148;
+  --green-pale: #d4e9e2;
+
+  /* Gold */
+  --gold: #cba258;
+  --gold-soft: #dfc49d;
+  --gold-pale: #faf6ee;
+
+  /* Stamp red */
+  --stamp-red: #9c2a1f;
+  --stamp-red-2: #b8412f;
+
+  /* Type families */
+  --f-serif: "Newsreader", "Iowan Old Style", Georgia, serif;
+  --f-display: "Newsreader", "Iowan Old Style", Georgia, serif;
+  --f-sans: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --f-hand: "Caveat", "Comic Sans MS", cursive;
+
+  /* Radii */
+  --r-coupon: 4px;
+  --r-input: 6px;
+  --r-cell: 3px;
+  --r-card: 14px;
+  --r-pill: 999px;
+
+  /* Elevation */
+  --sh-card: 0 0 0.5px rgba(0, 0, 0, 0.14), 0 1px 1px rgba(0, 0, 0, 0.2);
+  --sh-stuck: 0 -2px 12px rgba(0, 0, 0, 0.06);
+
+  /* Motion */
+  --ease: cubic-bezier(0.2, 0.6, 0.2, 1);
+  --t-fast: 0.15s;
+  --t-med: 0.2s;
+  --t-slow: 0.3s;
+
+  /* Coupon borders */
+  --b-double-gold: 4px double var(--gold);
+  --b-dashed-rule: 2px dashed var(--coupon-rule);
+  --b-hairline: 1px solid var(--hairline);
 }
 
+/* ─── Base ─────────────────────────────────────────────────────────────────── */
 @layer base {
-  * {
-    @apply border-border;
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
   }
+
+  html,
   body {
-    @apply bg-slate-50 text-slate-900;
+    background: var(--cream);
+    color: var(--ink);
+    font-family: var(--f-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: var(--gold-pale);
+    color: var(--green-deep);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--f-display);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    color: var(--green-deep);
   }
 }
 
-@layer utilities {
-  .border-border {
-    border-color: rgb(var(--border));
+/* ─── Coupon component ────────────────────────────────────────────────────── */
+@layer components {
+  .coupon {
+    background: var(--coupon-bg);
+    color: var(--coupon-ink);
+    font-family: var(--f-mono);
+    position: relative;
+    border-radius: var(--r-coupon);
+    overflow: visible;
+    background-image:
+      radial-gradient(rgba(120, 90, 30, 0.05) 1px, transparent 1px),
+      radial-gradient(rgba(180, 140, 70, 0.04) 1px, transparent 1px);
+    background-size:
+      3px 3px,
+      7px 7px;
+    background-position:
+      0 0,
+      1px 2px;
+  }
+  .coupon::before,
+  .coupon::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 14px;
+    background: radial-gradient(
+        circle at 10px 50%,
+        transparent 5px,
+        var(--coupon-bg) 5.5px
+      )
+      0 0 / 20px 14px repeat-x;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .coupon::before {
+    top: -7px;
+  }
+  .coupon::after {
+    bottom: -7px;
+    transform: rotate(180deg);
+  }
+
+  .coupon-head {
+    background: var(--green-deep);
+    color: var(--cream);
+    padding: 18px 28px 16px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    border-bottom: 4px double var(--gold);
+  }
+  .coupon-head h2 {
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: 26px;
+    letter-spacing: -0.01em;
+    margin: 0;
+    line-height: 1;
+    color: var(--cream);
+  }
+  .coupon-head .sub {
+    font-family: var(--f-mono);
+    font-size: 10.5px;
+    color: var(--gold);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+
+  /* Coupon match rows */
+  .match-row {
+    display: grid;
+    grid-template-columns: 38px 1fr 38px 38px 38px;
+    align-items: stretch;
+    border-bottom: 1px solid var(--coupon-rule-soft);
+    min-height: 56px;
+    position: relative;
+  }
+  .match-row:nth-child(even) {
+    background: rgba(255, 255, 255, 0.18);
+  }
+
+  .match-row .cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 1px solid var(--coupon-rule-soft);
+    cursor: pointer;
+    user-select: none;
+    transition: background var(--t-fast);
+    position: relative;
+  }
+  .match-row .cell:last-child {
+    border-right: none;
+  }
+  .match-row .cell:hover {
+    background: rgba(0, 0, 0, 0.06);
+  }
+  .match-row .cell .mark {
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: 22px;
+    line-height: 1;
+    position: relative;
+    z-index: 1;
+  }
+  /* Ballpoint-pen circle */
+  .match-row .cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 1px solid var(--coupon-rule-soft);
+    cursor: pointer;
+    user-select: none;
+    transition: background var(--t-fast);
+    position: relative;
+    overflow: visible;
+  }
+
+  .match-row .cell .mark {
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: 18px;
+    line-height: 1;
+    width: 1.2em;
+    text-align: center;
+    display: inline-block;
+    position: relative;
+    z-index: 1; /* text ovanpå cirkeln */
+  }
+
+  .match-row .cell.picked .mark::before {
+    content: "";
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    bottom: -8px;
+    left: -10px;
+    background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHBhdGggZD0iTSAzNCA3IEMgNTIgOSA2MCAyMyA1NyAzOCBDIDU0IDUyIDM2IDU4IDIyIDU1IEMgOCA1MSA0IDM2IDggMjIgQyAxMiAxMSAyNiA1IDM4IDcgQyA0NCA4IDUwIDEyIDU0IDE4IiBmaWxsPSJub25lIiBzdHJva2U9IiMxZDNhOGMiIHN0cm9rZS13aWR0aD0iMi40IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4=");
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    transform: rotate(-4deg);
+    z-index: 0; /* ovanpå bakgrund, under text */
+    pointer-events: none;
+    filter: drop-shadow(0 0 0.5px rgba(29, 58, 140, 0.5));
+  }
+
+  .match-row:nth-child(odd) .cell.picked .mark::before {
+    background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHBhdGggZD0iTSAzMCA2IEMgNDggNSA2MCAyMCA1OCAzNiBDIDU2IDUyIDM4IDYwIDIyIDU3IEMgNiA1NCAyIDM4IDUgMjMgQyA4IDEwIDI0IDQgMzYgNiBDIDQzIDcgNTIgMTMgNTYgMjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0iIzFkM2E4YyIgc3Ryb2tlLXdpZHRoPSIyLjQiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjwvc3ZnPg==");
+    transform: rotate(3deg) scaleX(-1);
+  }
+
+  .match-row:nth-child(3n) .cell.picked .mark::before {
+    transform: rotate(-7deg) scale(1.05, 0.96);
+  }
+
+  .match-row:nth-child(4n) .cell.picked .mark::before {
+    transform: rotate(2deg) scale(0.96, 1.03);
+  }
+
+  /* Coupon column header */
+  .coupon-colhead {
+    display: grid;
+    grid-template-columns: 38px 1fr 38px 38px 38px;
+    background: var(--coupon-bg);
+    border-bottom: 2px solid var(--coupon-rule);
+    font-family: var(--f-mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(0, 0, 0, 0.45);
+  }
+  .coupon-colhead > div {
+    padding: 8px 0;
+    text-align: center;
+    border-right: 1px solid var(--coupon-rule-soft);
+  }
+  .coupon-colhead > div:nth-child(2) {
+    text-align: left;
+    padding-left: 12px;
+  }
+  .coupon-colhead > div:last-child {
+    border-right: none;
+  }
+
+  /* Match row inner elements */
+  .match-row .rownum {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--f-mono);
+    font-weight: 700;
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.35);
+    border-right: 1px solid var(--coupon-rule-soft);
+  }
+
+  .match-row .teams {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 10px 12px;
+    border-right: 1px solid var(--coupon-rule-soft);
+    overflow: hidden;
+  }
+
+  .match-row .teams .pair {
+    font-family: var(--f-serif);
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: -0.01em;
+    color: var(--coupon-ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .match-row .teams .meta {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    color: rgba(0, 0, 0, 0.4);
+    margin-top: 3px;
+    white-space: nowrap;
+  }
+  /* Stamp */
+  .stamp {
+    display: inline-block;
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-style: italic;
+    letter-spacing: 0.04em;
+    color: var(--stamp-red);
+    border: 3px solid var(--stamp-red);
+    border-radius: 4px;
+    padding: 6px 14px 4px;
+    font-size: 18px;
+    text-transform: uppercase;
+    transform: rotate(-6deg);
+    opacity: 0.92;
+    background: rgba(255, 240, 230, 0.4);
+    box-shadow: inset 0 0 0 1px rgba(156, 42, 31, 0.15);
+    text-shadow: 1px 0 0 rgba(156, 42, 31, 0.5);
+  }
+  .stamp-green {
+    color: var(--green-deep);
+    border-color: var(--green-deep);
+    text-shadow: none;
+    background: rgba(212, 233, 226, 0.4);
+  }
+
+  /* Eyebrow */
+  .eyebrow {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 500;
+  }
+  .eyebrow-gold {
+    color: var(--gold);
+  }
+
+  /* Hairline divider */
+  .hairline {
+    height: 1px;
+    background: var(--hairline);
+  }
+  .hairline-t {
+    border-top: var(--b-hairline);
+  }
+  .hairline-b {
+    border-bottom: var(--b-hairline);
+  }
+  .section-link {
+    padding: 28px 24px;
+    border-top: 2px solid var(--hairline);
+    transition: border-color var(--t-fast) var(--ease);
+    cursor: pointer;
+    text-decoration: none;
+    display: block;
+  }
+  .section-link:hover {
+    border-color: var(--gold);
   }
 }

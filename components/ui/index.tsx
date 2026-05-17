@@ -1,5 +1,4 @@
 // components/ui/index.tsx
-// Minimal shadcn-compatible components without the CLI dependency
 "use client";
 
 import * as React from "react";
@@ -8,7 +7,7 @@ import { cn } from "@/lib/utils";
 // ── Button ────────────────────────────────────────────────────────────────────
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "default" | "outline" | "ghost" | "destructive" | "secondary";
+  variant?: "primary" | "outline" | "ghost" | "dark" | "gold" | "destructive";
   size?: "sm" | "default" | "lg";
   loading?: boolean;
 }
@@ -17,7 +16,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
       className,
-      variant = "default",
+      variant = "primary",
       size = "default",
       loading,
       children,
@@ -26,21 +25,31 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref,
   ) => {
-    const base =
-      "inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pitch-500 disabled:opacity-50 disabled:pointer-events-none";
+    const base = [
+      "inline-flex items-center justify-center gap-2 font-medium transition-all",
+      "rounded-pill cursor-pointer border border-transparent",
+      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green",
+      "disabled:opacity-50 disabled:pointer-events-none",
+      "active:scale-[0.96]",
+    ].join(" ");
+
     const variants = {
-      default: "bg-pitch-500 text-white hover:bg-pitch-600",
-      outline:
-        "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-pitch-400",
-      ghost: "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
-      destructive: "bg-red-600 text-white hover:bg-red-700",
-      secondary: "bg-slate-100 text-slate-700 hover:bg-slate-200",
+      primary:
+        "bg-[var(--green-cta)] text-white border-[var(--green-cta)] hover:bg-[var(--green)]",
+      outline: "bg-transparent text-ink border-ink hover:bg-cream",
+      ghost: "bg-transparent text-ink border-none hover:bg-cream",
+      dark: "bg-[var(--green-deep)] text-white border-[var(--green-deep)] hover:bg-green-uplift",
+      gold: "bg-gold text-[var(--green-deep)] border-gold font-semibold hover:bg-gold-soft",
+      destructive:
+        "bg-[var(--stamp-red)] text-white border-[var(--stamp-red)] hover:bg-[var(--stamp-red-2)]",
     };
+
     const sizes = {
-      sm: "h-8 px-3 text-xs",
-      default: "h-10 px-4 text-sm",
-      lg: "h-11 px-6 text-base",
+      sm: "h-8 px-4 text-xs tracking-wide",
+      default: "h-10 px-5 text-sm",
+      lg: "h-12 px-7 text-[15px] font-semibold",
     };
+
     return (
       <button
         ref={ref}
@@ -49,7 +58,11 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {loading && (
-          <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+          <svg
+            className="animate-spin h-3.5 w-3.5"
+            viewBox="0 0 24 24"
+            fill="none"
+          >
             <circle
               className="opacity-25"
               cx="12"
@@ -84,16 +97,17 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       <input
         ref={ref}
         className={cn(
-          "w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm",
-          "placeholder:text-slate-400",
-          "focus:outline-none focus:ring-2 focus:ring-pitch-500 focus:border-transparent",
+          "w-full bg-white text-ink font-sans text-sm px-3 py-2",
+          "border border-hairline rounded-input",
+          "placeholder:text-ink-faint",
+          "focus:outline-none focus:ring-2 focus:ring-green focus:border-transparent",
           "disabled:opacity-50",
-          error && "border-red-400 focus:ring-red-400",
+          error && "border-stamp focus:ring-stamp",
           className,
         )}
         {...props}
       />
-      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+      {error && <p className="mt-1 text-xs text-stamp">{error}</p>}
     </div>
   ),
 );
@@ -107,7 +121,10 @@ export const Label = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <label
     ref={ref}
-    className={cn("text-sm font-medium text-slate-700", className)}
+    className={cn(
+      "text-xs font-mono tracking-widest uppercase text-ink-soft",
+      className,
+    )}
     {...props}
   />
 ));
@@ -121,10 +138,7 @@ export const Card = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn(
-      "rounded-xl border border-slate-200 bg-white shadow-sm",
-      className,
-    )}
+    className={cn("bg-white rounded-card shadow-card", className)}
     {...props}
   />
 ));
@@ -135,7 +149,7 @@ export const CardHeader = ({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={cn("px-5 py-4 border-b border-slate-100", className)}
+    className={cn("px-6 py-4 border-b border-hairline", className)}
     {...props}
   />
 );
@@ -144,39 +158,50 @@ export const CardTitle = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLHeadingElement>) => (
-  <h3 className={cn("font-semibold text-slate-800", className)} {...props} />
+  <h3
+    className={cn(
+      "font-display font-semibold text-green-deep text-lg tracking-tight",
+      className,
+    )}
+    {...props}
+  />
 );
 
 export const CardContent = ({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn("px-5 py-4", className)} {...props} />
+  <div className={cn("px-6 py-4", className)} {...props} />
 );
 
-// ── Badge ─────────────────────────────────────────────────────────────────────
+// ── Badge / Pill ──────────────────────────────────────────────────────────────
 
 interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
-  variant?: "default" | "success" | "warning" | "error" | "muted";
+  variant?: "green" | "gold" | "red" | "dark" | "outline" | "muted";
 }
 
 export const Badge = ({
   className,
-  variant = "default",
+  variant = "muted",
   ...props
 }: BadgeProps) => {
   const variants = {
-    default: "bg-slate-100 text-slate-700",
-    success: "bg-green-100 text-green-700",
-    warning: "bg-yellow-100 text-yellow-700",
-    error: "bg-red-100 text-red-700",
-    muted: "bg-slate-50 text-slate-400",
+    green: "bg-green-pale text-green-deep",
+    gold: "border border-gold text-gold",
+    red: "bg-[rgba(156,42,31,0.08)] text-stamp",
+    dark: "bg-green-deep text-white",
+    outline: "border border-ink text-ink",
+    muted: "bg-cream text-ink-soft border border-hairline",
+    warning: "bg-gold-pale text-[var(--green-deep)] border border-gold-soft",
+    success: "bg-green-pale text-green-deep",
+    error: "bg-[rgba(156,42,31,0.08)] text-stamp",
   };
   return (
     <span
       className={cn(
-        "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium",
-        variants[variant],
+        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-pill",
+        "font-mono text-[10.5px] tracking-widest uppercase font-medium",
+        variants[variant as keyof typeof variants] ?? variants.muted,
         className,
       )}
       {...props}
@@ -184,7 +209,13 @@ export const Badge = ({
   );
 };
 
-// ── Toaster (simple toast system) ─────────────────────────────────────────────
+// ── Separator ─────────────────────────────────────────────────────────────────
+
+export const Separator = ({ className }: { className?: string }) => (
+  <div className={cn("hairline my-4", className)} />
+);
+
+// ── Toast / Toaster ───────────────────────────────────────────────────────────
 
 type ToastData = { id: string; message: string; type: "success" | "error" };
 
@@ -213,29 +244,25 @@ export function Toaster() {
 
   return (
     <ToastContext.Provider value={{ toast }}>
-      <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-2">
         {toasts.map((t) => (
           <div
             key={t.id}
             className={cn(
-              "flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium shadow-lg",
-              "animate-in slide-in-from-bottom-4 duration-300",
+              "flex items-center gap-2 rounded-card px-5 py-3 text-sm font-medium shadow-card",
+              "animate-in slide-in-from-bottom-4 duration-200",
               t.type === "success"
-                ? "bg-pitch-600 text-white"
-                : "bg-red-600 text-white",
+                ? "bg-green-deep text-white"
+                : "bg-stamp text-white",
             )}
           >
-            <span>{t.type === "success" ? "✓" : "✕"}</span>
-            {t.message}
+            <span className="font-display italic">
+              {t.type === "success" ? "✓" : "✕"}
+            </span>
+            {message}
           </div>
         ))}
       </div>
     </ToastContext.Provider>
   );
 }
-
-// ── Separator ─────────────────────────────────────────────────────────────────
-
-export const Separator = ({ className }: { className?: string }) => (
-  <hr className={cn("border-slate-100", className)} />
-);

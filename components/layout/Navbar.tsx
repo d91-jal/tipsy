@@ -20,8 +20,7 @@ export function Navbar({ session, locale }: NavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const switchLocale = () => {
-    const next = locale === "sv" ? "en" : "sv";
-    router.replace(pathname, { locale: next });
+    router.replace(pathname, { locale: locale === "sv" ? "en" : "sv" });
   };
 
   const navLinks = [
@@ -31,39 +30,57 @@ export function Navbar({ session, locale }: NavbarProps) {
       show: !!session,
     },
     { href: "/tips/group-stage" as const, label: t("tips"), show: !!session },
-    { href: "/standings" as const, label: t("standings"), show: !!session },
     ...(session?.user?.role === "ADMIN"
       ? [{ href: "/admin/results" as const, label: t("admin"), show: true }]
       : []),
   ].filter((l) => l.show);
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-white/80 backdrop-blur">
-      <div className="container mx-auto max-w-5xl px-4 h-14 flex items-center justify-between">
-        {/* Logo */}
-        <Link
-          href="/"
-          className="flex items-center gap-2 font-bold text-pitch-600 text-lg"
-        >
-          ⚽ <span className="hidden sm:inline">VM-Tipset 2026</span>
+    <header className="sticky top-0 z-40 w-full border-b border-hairline bg-cream/90 backdrop-blur">
+      <div className="mx-auto max-w-5xl px-6 h-16 flex items-center justify-between">
+        {/* Brand */}
+        <Link href="/" className="flex items-baseline gap-3 group">
+          {/* Brand mark — dark circle with italic T in gold */}
+          <span
+            className="inline-flex w-9 h-9 rounded-full bg-green-deep items-center justify-center
+                           text-gold font-display font-semibold italic text-xl translate-y-0.5
+                           group-hover:bg-green-uplift transition-colors"
+          >
+            T
+          </span>
+          <span
+            className="font-display font-semibold text-2xl tracking-tight text-green-deep
+                           group-hover:text-green transition-colors"
+          >
+            Tipsy
+          </span>
+          <span
+            className="font-mono text-[10px] tracking-[0.18em] uppercase text-ink-faint
+                           hidden sm:block -translate-y-0.5"
+          >
+            VM 2026
+          </span>
         </Link>
 
         {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-1">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={cn(
-                "px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
-                pathname.startsWith(link.href.toString())
-                  ? "bg-pitch-50 text-pitch-700"
-                  : "text-slate-600 hover:text-pitch-600 hover:bg-slate-50",
-              )}
-            >
-              {link.label}
-            </Link>
-          ))}
+          {navLinks.map((link) => {
+            const isActive = pathname.startsWith(link.href.toString());
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={cn(
+                  "px-4 py-1.5 rounded-pill text-sm font-medium transition-colors",
+                  isActive
+                    ? "bg-green-pale text-green-deep"
+                    : "text-ink-soft hover:text-green-deep hover:bg-cream",
+                )}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
         </nav>
 
         {/* Right actions */}
@@ -71,20 +88,21 @@ export function Navbar({ session, locale }: NavbarProps) {
           {/* Locale toggle */}
           <button
             onClick={switchLocale}
-            className="px-2.5 py-1 text-xs font-semibold rounded border border-slate-200
-                       text-slate-500 hover:border-pitch-400 hover:text-pitch-600 transition-colors"
+            className="font-mono text-[10px] tracking-[0.14em] uppercase px-2.5 py-1 rounded-pill
+                       border border-hairline text-ink-faint hover:text-green-deep hover:border-green
+                       transition-colors"
           >
             {locale === "sv" ? "EN" : "SV"}
           </button>
 
           {session ? (
-            <div className="flex items-center gap-2">
-              <span className="hidden sm:block text-xs text-slate-400 max-w-[120px] truncate">
+            <div className="flex items-center gap-3">
+              <span className="hidden sm:block font-mono text-[11px] tracking-wide text-ink-faint truncate max-w-[120px]">
                 {session.user.name ?? session.user.email}
               </span>
               <button
                 onClick={() => signOut({ callbackUrl: `/${locale}` })}
-                className="px-3 py-1.5 text-sm text-slate-600 hover:text-red-600 transition-colors"
+                className="text-sm text-ink-soft hover:text-stamp transition-colors font-medium"
               >
                 {t("logout")}
               </button>
@@ -92,8 +110,8 @@ export function Navbar({ session, locale }: NavbarProps) {
           ) : (
             <Link
               href="/auth/login"
-              className="px-3 py-1.5 rounded-lg bg-pitch-500 text-white text-sm font-medium
-                         hover:bg-pitch-600 transition-colors"
+              className="bg-green-cta text-white text-sm font-medium px-5 py-2 rounded-pill
+                         hover:bg-green transition-colors"
             >
               {t("login")}
             </Link>
@@ -102,7 +120,7 @@ export function Navbar({ session, locale }: NavbarProps) {
           {/* Mobile hamburger */}
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="md:hidden p-1.5 rounded text-slate-500"
+            className="md:hidden p-1.5 rounded text-ink-soft"
             aria-label="Menu"
           >
             <svg
@@ -133,14 +151,14 @@ export function Navbar({ session, locale }: NavbarProps) {
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div className="md:hidden border-t border-slate-100 bg-white px-4 py-2 space-y-1">
+        <div className="md:hidden border-t border-hairline bg-cream px-6 py-3 space-y-1">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               onClick={() => setMenuOpen(false)}
-              className="block px-3 py-2 rounded-md text-sm font-medium text-slate-600
-                         hover:bg-slate-50 hover:text-pitch-600"
+              className="block px-4 py-2 rounded-pill text-sm font-medium text-ink-soft
+                         hover:bg-green-pale hover:text-green-deep transition-colors"
             >
               {link.label}
             </Link>

@@ -19,7 +19,7 @@
     "draw": "Draw",
     "away": "Away team wins",
     "homeShort": "1",
-    "drawShort": "X",
+    "drawShort": "x",
     "awayShort": "2"
   },
   "match": {

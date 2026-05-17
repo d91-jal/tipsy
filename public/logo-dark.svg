@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" width="240" height="60">
+  <defs>
+    
+  </defs>
+  <circle cx="26" cy="36" r="22" fill="#cba258" fill-opacity="0.12" stroke="#cba258" stroke-width="1.5"></circle>
+  <text x="26" y="46" text-anchor="middle" class="mark-t">t</text>
+  <text x="56" y="42" class="wordmark">tipsy</text>
+  <text x="56" y="55" class="sub">Tippa. Vinn. Repeat.</text>
+</svg>

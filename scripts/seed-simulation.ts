@@ -57,7 +57,7 @@ const TEAM_STRENGTH: Record<string, number> = {
   EGY: 6.0,
   GHA: 6.0,
   CIV: 6.0,
-  IRI: 6.0,
+  IRN: 6.0,
   AUT: 6.0,
   RSA: 5.5,
   BIH: 5.5,

@@ -1,7 +1,7 @@
 // components/tips/GroupMatchCard.tsx
 "use client";
 
-import { useOptimistic, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useFormState as useActionState } from "react-dom";
 import { useTranslations, useLocale } from "next-intl";
 import { submitMatchTip } from "@/lib/actions/tips";
@@ -36,7 +36,7 @@ export function GroupMatchCard({
 }: GroupMatchCardProps) {
   const t = useTranslations();
   const [state, action] = useActionState(submitMatchTip, initialState);
-  const [optimisticTip, setOptimisticTip] = useOptimistic(
+  const [currentTip, setCurrentTip] = useState<Outcome | null>(
     existingTip?.prediction ?? null,
   );
   const [, startTransition] = useTransition();
@@ -62,14 +62,14 @@ export function GroupMatchCard({
   const buttons: { outcome: Outcome; labelKey: string; shortLabel: string }[] =
     [
       { outcome: "HOME", labelKey: "prediction.home", shortLabel: "1" },
-      { outcome: "DRAW", labelKey: "prediction.draw", shortLabel: "X" },
+      { outcome: "DRAW", labelKey: "prediction.draw", shortLabel: "x" },
       { outcome: "AWAY", labelKey: "prediction.away", shortLabel: "2" },
     ];
 
   function handleSelect(outcome: Outcome) {
     if (locked || finished) return;
     startTransition(async () => {
-      setOptimisticTip(outcome);
+      setCurrentTip(outcome);
       const fd = new FormData();
       fd.append("matchId", match.id);
       fd.append("prediction", outcome);
@@ -100,14 +100,10 @@ export function GroupMatchCard({
           {locked && !finished && (
             <Badge variant="muted">{t("match.deadlinePassed")}</Badge>
           )}
-          {optimisticTip && !finished && (
+          {currentTip && !finished && (
             <Badge variant="default" className="bg-pitch-50 text-pitch-700">
               ✓{" "}
-              {optimisticTip === "HOME"
-                ? "1"
-                : optimisticTip === "DRAW"
-                  ? "X"
-                  : "2"}
+              {currentTip === "HOME" ? "1" : currentTip === "DRAW" ? "x" : "2"}
             </Badge>
           )}
         </div>
@@ -126,7 +122,7 @@ export function GroupMatchCard({
         <div className="flex gap-1 shrink-0">
           {buttons.map(({ outcome, shortLabel }) => {
             const odds = getOdds(outcome);
-            const isSelected = optimisticTip === outcome;
+            const isSelected = currentTip === outcome;
             const isCorrect = actualOutcome === outcome;
             const isWrong = finished && isSelected && !isCorrect;
 
