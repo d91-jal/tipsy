@@ -2,11 +2,12 @@
 // Coupon-style team selector for group advancement tips.
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useFormState } from "react-dom";
 import { submitGroupAdvancementTip } from "@/lib/actions/tips";
 import type { MatchTipState } from "@/lib/actions/tips";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui";
 
 type Team = {
   id: string;
@@ -53,7 +54,24 @@ export function AdvancementCard({
   const [saved, setSaved] = useState(!!existingTip);
   const [saving, setSaving] = useState(false);
 
+  const { toast } = useToast();
   const isSv = locale === "sv";
+
+  useEffect(() => {
+    if (state.success) {
+      toast(isSv ? "Tips sparat ✓" : "Tip saved ✓", "success");
+    } else if (state.error) {
+      const msg =
+        state.error === "DEADLINE_PASSED"
+          ? isSv
+            ? "Tips stängt — deadline har passerat"
+            : "Tips closed — deadline passed"
+          : isSv
+            ? "Kunde inte spara tipset"
+            : "Could not save tip";
+      toast(msg, "error");
+    }
+  }, [state.success, state.error]);
 
   function toggleTeam(teamId: string) {
     if (locked) return;
@@ -72,10 +90,21 @@ export function AdvancementCard({
     fd.append("groupId", group.id);
     fd.append("firstTeamId", selected[0]);
     fd.append("secondTeamId", selected[1]);
+
     startTransition(async () => {
-      await action(fd);
-      setSaved(true);
-      setSaving(false);
+      try {
+        await action(fd);
+        setSaved(true);
+      } catch {
+        toast(
+          isSv
+            ? "Nätverksfel — tipset sparades inte"
+            : "Network error — tip not saved",
+          "error",
+        );
+      } finally {
+        setSaving(false);
+      }
     });
   }
 

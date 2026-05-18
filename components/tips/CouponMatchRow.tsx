@@ -3,11 +3,12 @@
 // Uses the design system's .match-row / .cell / .picked CSS classes.
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useFormState } from "react-dom";
 import { submitMatchTip } from "@/lib/actions/tips";
 import type { MatchTipState } from "@/lib/actions/tips";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui";
 
 type Outcome = "HOME" | "DRAW" | "AWAY";
 
@@ -46,7 +47,27 @@ export function CouponMatchRow({
     match.matchTips[0]?.prediction ?? null,
   );
 
+  const { toast } = useToast();
   const isSv = locale === "sv";
+
+  useEffect(() => {
+    if (state.error) {
+      const msg =
+        state.error === "DEADLINE_PASSED"
+          ? isSv
+            ? "Tips stängt — deadline har passerat"
+            : "Tips closed — deadline passed"
+          : state.error === "NOT_AUTHENTICATED"
+            ? isSv
+              ? "Du är inte inloggad"
+              : "Not signed in"
+            : isSv
+              ? "Kunde inte spara tipset"
+              : "Could not save tip";
+      toast(msg, "error");
+    }
+  }, [state.error]);
+
   const finished = match.status === "FINISHED";
   const locked = new Date() > new Date(match.tipDeadline ?? match.scheduledAt);
 
@@ -64,12 +85,26 @@ export function CouponMatchRow({
 
   function handlePick(outcome: Outcome) {
     if (locked || finished) return;
+
+    const previousPick = currentPick; // spara för rollback
+    setCurrentPick(outcome); // optimistisk uppdatering
+
     startTransition(async () => {
-      setCurrentPick(outcome);
-      const fd = new FormData();
-      fd.append("matchId", match.id);
-      fd.append("prediction", outcome);
-      await formAction(fd);
+      try {
+        const fd = new FormData();
+        fd.append("matchId", match.id);
+        fd.append("prediction", outcome);
+        await formAction(fd);
+      } catch {
+        // Nätverksfel — återställ till föregående val
+        setCurrentPick(previousPick);
+        toast(
+          isSv
+            ? "Nätverksfel — tipset sparades inte"
+            : "Network error — tip not saved",
+          "error",
+        );
+      }
     });
   }
 

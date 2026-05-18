@@ -8,6 +8,7 @@ import { getLocale } from "next-intl/server";
 import { redirect } from "@/i18n/routing";
 import { notFound } from "next/navigation";
 import { CouponsView } from "@/components/competitions/CouponsView";
+import { BackLink } from "@/components/layout/BackLink";
 
 export const revalidate = 60;
 
@@ -101,15 +102,21 @@ export default async function CouponsPage({
   });
 
   return (
-    <CouponsView
-      competition={competition}
-      members={members}
-      groups={groups}
-      tournamentTips={tournamentTips}
-      tournamentActual={tournamentActual}
-      currentUserId={session.user.id}
-      isLocked={isLocked}
-      locale={locale}
-    />
+    <div className="space-y-6 max-w-4xl">
+      <BackLink
+        href={`/competitions/${slug}`}
+        label={isSv ? "Tillbaka till ställningen" : "Back to standings"}
+      />
+      <CouponsView
+        competition={competition}
+        members={members}
+        groups={groups}
+        tournamentTips={tournamentTips}
+        tournamentActual={tournamentActual}
+        currentUserId={session.user.id}
+        isLocked={isLocked}
+        locale={locale}
+      />
+    </div>
   );
 }

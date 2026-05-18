@@ -1,10 +1,11 @@
 // components/tips/TournamentTipForm.tsx  — Fas 3 redesign
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useFormState } from "react-dom";
 import { submitTournamentTip } from "@/lib/actions/tips";
 import type { MatchTipState } from "@/lib/actions/tips";
+import { useToast } from "@/components/ui";
 
 type Team = {
   id: string;
@@ -47,8 +48,28 @@ export function TournamentTipForm({
   const [finalist2, setFinalist2] = useState(existingTip?.finalist2Id ?? "");
   const [winner, setWinner] = useState(existingTip?.winnerId ?? "");
   const [saved, setSaved] = useState(!!existingTip);
-
+  const { toast } = useToast();
   const isSv = locale === "sv";
+
+  useEffect(() => {
+    if (state.success) {
+      toast(
+        isSv ? "Turneringstips sparat ✓" : "Tournament tip saved ✓",
+        "success",
+      );
+    } else if (state.error) {
+      toast(
+        state.error === "DEADLINE_PASSED"
+          ? isSv
+            ? "Tips stängt"
+            : "Tips closed"
+          : isSv
+            ? "Kunde inte spara"
+            : "Could not save",
+        "error",
+      );
+    }
+  }, [state.success, state.error]);
 
   const teamName = (t: Team) => (isSv ? t.nameSv : t.nameEn);
   const winOdds = (t: Team) =>
@@ -73,9 +94,19 @@ export function TournamentTipForm({
     fd.append("finalist1Id", finalist1);
     fd.append("finalist2Id", finalist2);
     fd.append("winnerId", winner);
+
     startTransition(async () => {
-      await action(fd);
-      setSaved(true);
+      try {
+        await action(fd);
+        setSaved(true);
+      } catch {
+        toast(
+          isSv
+            ? "Nätverksfel — tipset sparades inte"
+            : "Network error — tip not saved",
+          "error",
+        );
+      }
     });
   }
 

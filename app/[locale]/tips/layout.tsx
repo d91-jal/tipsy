@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { getLocale } from "next-intl/server";
 import { redirect } from "@/i18n/routing";
 import { TipsNav } from "@/components/tips/TipsNav";
+import { BackLink } from "@/components/layout/BackLink";
 
 export default async function TipsLayout({
   children,
@@ -16,6 +17,7 @@ export default async function TipsLayout({
 
   return (
     <div className="space-y-5">
+      <BackLink href="/" label={locale === "sv" ? "Hem" : "Home"} />
       <TipsNav locale={locale} />
       {children}
     </div>

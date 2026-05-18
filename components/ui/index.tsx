@@ -227,7 +227,18 @@ export function useToast() {
   return React.useContext(ToastContext);
 }
 
-export function Toaster() {
+/**
+ * Wrap the entire layout in ToastProvider instead of rendering Toaster as sibling.
+ * This makes useToast() available to all child components.
+ *
+ * In app/[locale]/layout.tsx:
+ *   <ToastProvider>
+ *     <Navbar />
+ *     <main>{children}</main>
+ *     <footer />
+ *   </ToastProvider>
+ */
+export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = React.useState<ToastData[]>([]);
 
   const toast = React.useCallback(
@@ -236,7 +247,7 @@ export function Toaster() {
       setToasts((prev) => [...prev, { id, message, type }]);
       setTimeout(
         () => setToasts((prev) => prev.filter((t) => t.id !== id)),
-        3500,
+        3200,
       );
     },
     [],
@@ -244,25 +255,65 @@ export function Toaster() {
 
   return (
     <ToastContext.Provider value={{ toast }}>
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-2">
+      {children}
+
+      {/* Toast display — fixed bottom right */}
+      <div
+        style={{
+          position: "fixed",
+          bottom: 24,
+          right: 24,
+          zIndex: 9999,
+          display: "flex",
+          flexDirection: "column",
+          gap: 8,
+          pointerEvents: "none",
+        }}
+      >
         {toasts.map((t) => (
           <div
             key={t.id}
-            className={cn(
-              "flex items-center gap-2 rounded-card px-5 py-3 text-sm font-medium shadow-card",
-              "animate-in slide-in-from-bottom-4 duration-200",
-              t.type === "success"
-                ? "bg-green-deep text-white"
-                : "bg-stamp text-white",
-            )}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              padding: "12px 18px",
+              borderRadius: "var(--r-card)",
+              boxShadow: "0 4px 24px rgba(0,0,0,0.18)",
+              fontFamily: "var(--f-sans)",
+              fontSize: 14,
+              fontWeight: 500,
+              background:
+                t.type === "success" ? "var(--green-deep)" : "var(--stamp-red)",
+              color: "var(--cream)",
+              animation: "slideInRight 0.2s ease",
+              pointerEvents: "auto",
+            }}
           >
-            <span className="font-display italic">
+            <span
+              style={{
+                fontFamily: "var(--f-display)",
+                fontStyle: "italic",
+                fontWeight: 600,
+                fontSize: 16,
+              }}
+            >
               {t.type === "success" ? "✓" : "✕"}
             </span>
-            {message}
+            {t.message}
           </div>
         ))}
       </div>
+
+      <style>{`
+        @keyframes slideInRight {
+          from { transform: translateX(16px); opacity: 0; }
+          to   { transform: translateX(0);    opacity: 1; }
+        }
+      `}</style>
     </ToastContext.Provider>
   );
 }
+
+// Keep Toaster as alias for backwards compatibility during migration
+export const Toaster = ToastProvider;

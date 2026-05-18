@@ -180,7 +180,7 @@ export const MATCHES: Array<{
     stage: "GROUP",
     group: "C",
     homeTeam: "BRA",
-    awayTeam: "MOR",
+    awayTeam: "MAR",
     scheduledAt: "2026-06-13T22:00:00Z",
   },
   {
@@ -372,7 +372,7 @@ export const MATCHES: Array<{
     stage: "GROUP",
     group: "C",
     homeTeam: "SCO",
-    awayTeam: "MOR",
+    awayTeam: "MAR",
     scheduledAt: "2026-06-19T22:00:00Z",
   },
   {
@@ -547,7 +547,7 @@ export const MATCHES: Array<{
     matchNumber: 52,
     stage: "GROUP",
     group: "C",
-    homeTeam: "MOR",
+    homeTeam: "MAR",
     awayTeam: "HAI",
     scheduledAt: "2026-06-24T22:00:00Z",
   },

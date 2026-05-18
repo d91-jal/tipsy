@@ -8,6 +8,7 @@ import { getLocale } from "next-intl/server";
 import { redirect, Link } from "@/i18n/routing";
 import { notFound } from "next/navigation";
 import { PlayerCoupon } from "@/components/competitions/PlayerCoupon";
+import { BackLink } from "@/components/layout/BackLink";
 
 export default async function PlayerPage({
   params: { slug, userId },
@@ -123,12 +124,10 @@ export default async function PlayerPage({
   return (
     <div className="space-y-6 max-w-4xl">
       {/* Back link */}
-      <Link
-        href={`/competitions/${slug}` as any}
-        className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-pitch-600"
-      >
-        ← {isSv ? "Tillbaka till ställningen" : "Back to standings"}
-      </Link>
+      <BackLink
+        href={`/competitions/${slug}`}
+        label={isSv ? "Tillbaka till ställningen" : "Back to standings"}
+      />
 
       {/* Player header */}
       <div className="flex items-start justify-between gap-4">
