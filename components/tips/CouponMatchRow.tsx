@@ -1,23 +1,21 @@
-// components/tips/CouponMatchRow.tsx
-// A single match row inside a .coupon — replaces GroupMatchCard.
-// Uses the design system's .match-row / .cell / .picked CSS classes.
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useFormState } from "react-dom";
+import { useEffect } from "react";
 import { submitMatchTip } from "@/lib/actions/tips";
 import type { MatchTipState } from "@/lib/actions/tips";
-import { cn } from "@/lib/utils";
 import { useToast } from "@/components/ui";
+import { cn } from "@/lib/utils";
 
 type Outcome = "HOME" | "DRAW" | "AWAY";
-
 type Odds = { outcome: Outcome; avgValue: number };
 
 type Match = {
   id: string;
   matchNumber: number;
   scheduledAt: string;
+  tipDeadline: string;
   homeScore: number | null;
   awayScore: number | null;
   status: string;
@@ -29,47 +27,22 @@ type Match = {
 
 interface CouponMatchRowProps {
   match: Match;
-  rowIndex: number; // 1-based display number within group
   locale: string;
 }
 
 const initialState: MatchTipState = { success: false };
 
-export function CouponMatchRow({
-  match,
-  rowIndex,
-  locale,
-}: CouponMatchRowProps) {
+export function CouponMatchRow({ match, locale }: CouponMatchRowProps) {
   const [state, formAction] = useFormState(submitMatchTip, initialState);
   const [, startTransition] = useTransition();
-
-  const [currentPick, setCurrentPick] = useState<Outcome | null>(
-    match.matchTips[0]?.prediction ?? null,
-  );
-
   const { toast } = useToast();
+
+  const existingPick = match.matchTips[0]?.prediction ?? null;
+  const [currentPick, setCurrentPick] = useState<Outcome | null>(existingPick);
+
   const isSv = locale === "sv";
-
-  useEffect(() => {
-    if (state.error) {
-      const msg =
-        state.error === "DEADLINE_PASSED"
-          ? isSv
-            ? "Tips stängt — deadline har passerat"
-            : "Tips closed — deadline passed"
-          : state.error === "NOT_AUTHENTICATED"
-            ? isSv
-              ? "Du är inte inloggad"
-              : "Not signed in"
-            : isSv
-              ? "Kunde inte spara tipset"
-              : "Could not save tip";
-      toast(msg, "error");
-    }
-  }, [state.error]);
-
   const finished = match.status === "FINISHED";
-  const locked = new Date() > new Date(match.tipDeadline ?? match.scheduledAt);
+  const locked = new Date() > new Date(match.tipDeadline);
 
   const actualOutcome: Outcome | null =
     match.homeScore !== null && match.awayScore !== null
@@ -80,15 +53,28 @@ export function CouponMatchRow({
           : "DRAW"
       : null;
 
-  const getOdds = (o: Outcome) =>
+  const getOdds = (o: Outcome): number | null =>
     match.odds.find((x) => x.outcome === o)?.avgValue ?? null;
+
+  // Error toast
+  useEffect(() => {
+    if (state.error) {
+      const msg =
+        state.error === "DEADLINE_PASSED"
+          ? isSv
+            ? "Tips stängt — deadline har passerat"
+            : "Tips closed — deadline passed"
+          : isSv
+            ? "Kunde inte spara tipset"
+            : "Could not save tip";
+      toast(msg, "error");
+    }
+  }, [state.error]);
 
   function handlePick(outcome: Outcome) {
     if (locked || finished) return;
-
-    const previousPick = currentPick; // spara för rollback
-    setCurrentPick(outcome); // optimistisk uppdatering
-
+    const previousPick = currentPick;
+    setCurrentPick(outcome);
     startTransition(async () => {
       try {
         const fd = new FormData();
@@ -96,7 +82,6 @@ export function CouponMatchRow({
         fd.append("prediction", outcome);
         await formAction(fd);
       } catch {
-        // Nätverksfel — återställ till föregående val
         setCurrentPick(previousPick);
         toast(
           isSv
@@ -108,10 +93,11 @@ export function CouponMatchRow({
     });
   }
 
-  const homeName = isSv ? match.homeTeam?.nameSv : match.homeTeam?.nameEn;
-  const awayName = isSv ? match.awayTeam?.nameSv : match.awayTeam?.nameEn;
+  const homeNameFull = isSv ? match.homeTeam?.nameSv : match.homeTeam?.nameEn;
+  const awayNameFull = isSv ? match.awayTeam?.nameSv : match.awayTeam?.nameEn;
+  const homeCode = match.homeTeam?.fifaCode ?? "?";
+  const awayCode = match.awayTeam?.fifaCode ?? "?";
 
-  // Format date — day/month + time
   const dt = new Date(match.scheduledAt);
   const dateStr = dt
     .toLocaleDateString(isSv ? "sv-SE" : "en-GB", {
@@ -127,56 +113,59 @@ export function CouponMatchRow({
 
   const CELLS: { outcome: Outcome; mark: string }[] = [
     { outcome: "HOME", mark: "1" },
-    { outcome: "DRAW", mark: "x" },
+    { outcome: "DRAW", mark: "X" },
     { outcome: "AWAY", mark: "2" },
   ];
 
-  return (
-    <div className={cn("match-row", finished && "opacity-90")}>
-      {/* Row number */}
-      <div className="rownum">{String(rowIndex).padStart(2, "0")}</div>
+  const hasOdds = match.odds.length > 0;
 
-      {/* Teams + meta */}
+  return (
+    <div className="match-row">
+      {/* Row number — använder matchnummer från databasen */}
+      <div className="rownum">{String(match.matchNumber).padStart(2, "0")}</div>
+
+      {/* Teams */}
       <div className="teams">
-        <div className="pair">
-          {homeName}
+        {/* Full name — döljs på mobil via CSS */}
+        <div className="pair-full">
+          {homeNameFull}
           <span
             style={{
               color: "rgba(0,0,0,0.3)",
               fontStyle: "italic",
-              margin: "0 6px",
+              margin: "0 5px",
             }}
           >
             –
           </span>
-          {awayName}
+          {awayNameFull}
         </div>
+
+        {/* FIFA-koder — visas på mobil via CSS */}
+        <div className="pair-short">
+          {homeCode}
+          <span style={{ color: "rgba(0,0,0,0.35)", margin: "0 4px" }}>–</span>
+          {awayCode}
+        </div>
+
+        {/* Meta */}
         <div className="meta">
           <span>
             {dateStr} · {timeStr}
           </span>
           {finished && match.homeScore !== null && (
             <>
-              <span style={{ margin: "0 6px", opacity: 0.3 }}>|</span>
+              <span style={{ margin: "0 5px", opacity: 0.3 }}>|</span>
               <span style={{ fontWeight: 700 }}>
                 {match.homeScore}–{match.awayScore}
               </span>
             </>
           )}
-          {!finished && (
-            <>
-              <span style={{ margin: "0 6px", opacity: 0.3 }}>|</span>
-              <span style={{ opacity: 0.5 }}>
-                {getOdds("HOME")?.toFixed(2)} / {getOdds("DRAW")?.toFixed(2)} /{" "}
-                {getOdds("AWAY")?.toFixed(2)}
-              </span>
-            </>
-          )}
           {locked && !finished && (
             <>
-              <span style={{ margin: "0 6px", opacity: 0.3 }}>|</span>
+              <span style={{ margin: "0 5px", opacity: 0.3 }}>|</span>
               <span
-                style={{ color: "var(--stamp-red)", letterSpacing: "0.14em" }}
+                style={{ color: "var(--stamp-red)", letterSpacing: "0.12em" }}
               >
                 {isSv ? "STÄNGT" : "CLOSED"}
               </span>
@@ -185,11 +174,12 @@ export function CouponMatchRow({
         </div>
       </div>
 
-      {/* 1 · X · 2 cells */}
+      {/* 1 · X · 2 cells — med odds under symbolen */}
       {CELLS.map(({ outcome, mark }) => {
         const isPicked = currentPick === outcome;
         const isCorrect = finished && actualOutcome === outcome;
         const isMiss = finished && isPicked && actualOutcome !== outcome;
+        const odds = getOdds(outcome);
 
         return (
           <div
@@ -198,13 +188,19 @@ export function CouponMatchRow({
             className={cn(
               "cell",
               isPicked && "picked",
-              // For finished matches: tint correct cells gold, missed cells red
               isCorrect && !isPicked && "bg-[rgba(203,162,88,0.15)]",
               isMiss && "opacity-40",
               (locked || finished) && "cursor-default",
             )}
-            title={locked ? (isSv ? "Tips stängt" : "Tips closed") : undefined}
+            style={{
+              // Taller cell when odds are shown
+              flexDirection: "column",
+              gap: hasOdds ? 2 : 0,
+              paddingTop: hasOdds ? 8 : 0,
+              paddingBottom: hasOdds ? 8 : 0,
+            }}
           >
+            {/* 1 / X / 2 symbol */}
             <span
               className={cn(
                 "mark",
@@ -215,17 +211,43 @@ export function CouponMatchRow({
               {mark}
             </span>
 
-            {/* Points earned badge — top right of cell */}
+            {/* Odds — visas alltid om tillgängliga */}
+            {odds !== null && (
+              <span
+                style={{
+                  fontFamily: "var(--f-mono)",
+                  fontSize: 9,
+                  lineHeight: 1,
+                  letterSpacing: "0.04em",
+                  color: isPicked
+                    ? "var(--green)"
+                    : isCorrect
+                      ? "var(--green)"
+                      : "rgba(0,0,0,0.38)",
+                  fontWeight: isPicked ? 700 : 400,
+                  transition: "color 0.15s",
+                }}
+              >
+                {odds.toFixed(2)}
+              </span>
+            )}
+
+            {/* Intjänade poäng — visas i övre hörnet efter match */}
             {finished &&
               isPicked &&
               match.matchTips[0]?.pointsEarned != null && (
                 <span
-                  className="absolute top-1 right-1 font-mono text-[9px] leading-none"
                   style={{
+                    position: "absolute",
+                    top: 2,
+                    right: 2,
+                    fontFamily: "var(--f-mono)",
+                    fontSize: 8,
+                    lineHeight: 1,
                     color:
                       match.matchTips[0].pointsEarned > 0
                         ? "var(--green)"
-                        : "rgba(0,0,0,0.35)",
+                        : "rgba(0,0,0,0.3)",
                   }}
                 >
                   {match.matchTips[0].pointsEarned > 0
