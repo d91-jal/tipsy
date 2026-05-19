@@ -1,11 +1,10 @@
-// components/layout/Navbar.tsx
+// components/layout/Navbar.tsx  — förenklad
 "use client";
 
 import { useTranslations, useLocale } from "next-intl";
 import { usePathname, useRouter, Link } from "@/i18n/routing";
 import { signOut } from "next-auth/react";
 import type { Session } from "next-auth";
-import { cn } from "@/lib/utils";
 import { useState } from "react";
 
 interface NavbarProps {
@@ -23,86 +22,193 @@ export function Navbar({ session, locale }: NavbarProps) {
     router.replace(pathname, { locale: locale === "sv" ? "en" : "sv" });
   };
 
-  const navLinks = [
-    {
-      href: "/competitions" as const,
-      label: locale === "sv" ? "Tävlingar" : "Competitions",
-      show: !!session,
-    },
-    { href: "/tips/group-stage" as const, label: t("tips"), show: !!session },
-    ...(session?.user?.role === "ADMIN"
-      ? [{ href: "/admin/results" as const, label: t("admin"), show: true }]
-      : []),
-  ].filter((l) => l.show);
-
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-hairline bg-cream/90 backdrop-blur">
-      <div className="mx-auto max-w-5xl px-6 h-16 flex items-center justify-between">
+    <header
+      style={{
+        position: "sticky",
+        top: 0,
+        zIndex: 40,
+        width: "100%",
+        borderBottom: "1px solid var(--hairline)",
+        background: "rgba(242, 240, 235, 0.92)",
+        backdropFilter: "blur(12px)",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 1024,
+          margin: "0 auto",
+          padding: "0 24px",
+          height: 60,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
         {/* Brand */}
-        <Link href="/" className="flex items-baseline gap-3 group">
-          {/* Brand mark — dark circle with italic T in gold */}
+        <Link
+          href="/"
+          style={{
+            textDecoration: "none",
+            display: "flex",
+            alignItems: "baseline",
+            gap: 10,
+          }}
+        >
           <span
-            className="inline-flex w-9 h-9 rounded-full bg-green-deep items-center justify-center
-                           text-gold font-display font-semibold italic text-xl translate-y-0.5
-                           group-hover:bg-green-uplift transition-colors"
+            style={{
+              display: "inline-flex",
+              width: 34,
+              height: 34,
+              borderRadius: "50%",
+              background: "var(--green-deep)",
+              color: "var(--gold)",
+              alignItems: "center",
+              justifyContent: "center",
+              fontFamily: "var(--f-display)",
+              fontStyle: "italic",
+              fontWeight: 600,
+              fontSize: 18,
+              marginBottom: -2,
+            }}
           >
             T
           </span>
           <span
-            className="font-display font-semibold text-2xl tracking-tight text-green-deep
-                           group-hover:text-green transition-colors"
+            style={{
+              fontFamily: "var(--f-display)",
+              fontWeight: 600,
+              fontSize: 22,
+              letterSpacing: "-0.02em",
+              color: "var(--green-deep)",
+            }}
           >
             Tipsy
           </span>
           <span
-            className="font-mono text-[10px] tracking-[0.18em] uppercase text-ink-faint
-                           hidden sm:block -translate-y-0.5"
+            style={{
+              fontFamily: "var(--f-mono)",
+              fontSize: 9,
+              letterSpacing: "0.16em",
+              textTransform: "uppercase",
+              color: "var(--ink-faint)",
+              marginBottom: -1,
+              display: "none", // visas via sm:block nedan
+            }}
+            className="hidden sm:block"
           >
             VM 2026
           </span>
         </Link>
 
-        {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-1">
-          {navLinks.map((link) => {
-            const isActive = pathname.startsWith(link.href.toString());
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  "px-4 py-1.5 rounded-pill text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-green-pale text-green-deep"
-                    : "text-ink-soft hover:text-green-deep hover:bg-cream",
-                )}
-              >
-                {link.label}
-              </Link>
-            );
-          })}
+        {/* Desktop nav — bara Tävlingar */}
+        <nav style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          {session && (
+            <Link
+              href="/competitions"
+              style={{
+                fontFamily: "var(--f-mono)",
+                fontSize: 11,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                textDecoration: "none",
+                padding: "6px 14px",
+                borderRadius: "var(--r-pill)",
+                color: pathname.includes("/competitions")
+                  ? "var(--green-deep)"
+                  : "var(--ink-soft)",
+                background: pathname.includes("/competitions")
+                  ? "var(--green-pale)"
+                  : "transparent",
+                transition: "all 0.15s",
+              }}
+            >
+              {locale === "sv" ? "Tävlingar" : "Competitions"}
+            </Link>
+          )}
+
+          {session?.user?.role === "ADMIN" && (
+            <Link
+              href="/admin/results"
+              style={{
+                fontFamily: "var(--f-mono)",
+                fontSize: 11,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                textDecoration: "none",
+                padding: "6px 14px",
+                borderRadius: "var(--r-pill)",
+                color: pathname.includes("/admin")
+                  ? "var(--green-deep)"
+                  : "var(--ink-soft)",
+                background: pathname.includes("/admin")
+                  ? "var(--green-pale)"
+                  : "transparent",
+                transition: "all 0.15s",
+              }}
+            >
+              Admin
+            </Link>
+          )}
         </nav>
 
         {/* Right actions */}
-        <div className="flex items-center gap-2">
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           {/* Locale toggle */}
           <button
             onClick={switchLocale}
-            className="font-mono text-[10px] tracking-[0.14em] uppercase px-2.5 py-1 rounded-pill
-                       border border-hairline text-ink-faint hover:text-green-deep hover:border-green
-                       transition-colors"
+            style={{
+              fontFamily: "var(--f-mono)",
+              fontSize: 9.5,
+              letterSpacing: "0.14em",
+              textTransform: "uppercase",
+              padding: "4px 10px",
+              borderRadius: "var(--r-pill)",
+              border: "1px solid var(--hairline)",
+              color: "var(--ink-faint)",
+              background: "transparent",
+              cursor: "pointer",
+              transition: "all 0.15s",
+            }}
           >
             {locale === "sv" ? "EN" : "SV"}
           </button>
 
           {session ? (
-            <div className="flex items-center gap-3">
-              <span className="hidden sm:block font-mono text-[11px] tracking-wide text-ink-faint truncate max-w-[120px]">
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span
+                style={{
+                  fontFamily: "var(--f-mono)",
+                  fontSize: 10.5,
+                  color: "var(--ink-faint)",
+                  maxWidth: 120,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+                className="hidden sm:block"
+              >
                 {session.user.name ?? session.user.email}
               </span>
               <button
                 onClick={() => signOut({ callbackUrl: `/${locale}` })}
-                className="text-sm text-ink-soft hover:text-stamp transition-colors font-medium"
+                style={{
+                  fontFamily: "var(--f-mono)",
+                  fontSize: 10.5,
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  color: "var(--ink-faint)",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  transition: "color 0.15s",
+                }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.color = "var(--stamp-red)")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.color = "var(--ink-faint)")
+                }
               >
                 {t("logout")}
               </button>
@@ -110,8 +216,17 @@ export function Navbar({ session, locale }: NavbarProps) {
           ) : (
             <Link
               href="/auth/login"
-              className="bg-green-cta text-white text-sm font-medium px-5 py-2 rounded-pill
-                         hover:bg-green transition-colors"
+              style={{
+                fontFamily: "var(--f-sans)",
+                fontWeight: 600,
+                fontSize: 13,
+                padding: "7px 18px",
+                borderRadius: "var(--r-pill)",
+                background: "var(--green-cta)",
+                color: "var(--cream)",
+                textDecoration: "none",
+                transition: "background 0.15s",
+              }}
             >
               {t("login")}
             </Link>
@@ -120,11 +235,19 @@ export function Navbar({ session, locale }: NavbarProps) {
           {/* Mobile hamburger */}
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="md:hidden p-1.5 rounded text-ink-soft"
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              color: "var(--ink-soft)",
+              padding: 4,
+            }}
+            className="md:hidden"
             aria-label="Menu"
           >
             <svg
-              className="w-5 h-5"
+              width="20"
+              height="20"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -150,19 +273,48 @@ export function Navbar({ session, locale }: NavbarProps) {
       </div>
 
       {/* Mobile menu */}
-      {menuOpen && (
-        <div className="md:hidden border-t border-hairline bg-cream px-6 py-3 space-y-1">
-          {navLinks.map((link) => (
+      {menuOpen && session && (
+        <div
+          style={{
+            borderTop: "1px solid var(--hairline)",
+            background: "var(--cream)",
+            padding: "12px 24px 16px",
+          }}
+        >
+          <Link
+            href="/competitions"
+            onClick={() => setMenuOpen(false)}
+            style={{
+              display: "block",
+              padding: "10px 0",
+              fontFamily: "var(--f-mono)",
+              fontSize: 11,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: "var(--ink-soft)",
+              textDecoration: "none",
+            }}
+          >
+            {locale === "sv" ? "Tävlingar" : "Competitions"}
+          </Link>
+          {session.user?.role === "ADMIN" && (
             <Link
-              key={link.href}
-              href={link.href}
+              href="/admin/results"
               onClick={() => setMenuOpen(false)}
-              className="block px-4 py-2 rounded-pill text-sm font-medium text-ink-soft
-                         hover:bg-green-pale hover:text-green-deep transition-colors"
+              style={{
+                display: "block",
+                padding: "10px 0",
+                fontFamily: "var(--f-mono)",
+                fontSize: 11,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: "var(--ink-soft)",
+                textDecoration: "none",
+              }}
             >
-              {link.label}
+              Admin
             </Link>
-          ))}
+          )}
         </div>
       )}
     </header>

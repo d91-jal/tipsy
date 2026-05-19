@@ -17,7 +17,12 @@ export default async function TipsLayout({
 
   return (
     <div className="space-y-5">
-      <BackLink href="/" label={locale === "sv" ? "Hem" : "Home"} />
+      <BackLink
+        href="/competitions"
+        label={
+          locale === "sv" ? "Tillbaka till tävling" : "Back to competition"
+        }
+      />
       <TipsNav locale={locale} />
       {children}
     </div>

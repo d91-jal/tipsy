@@ -19,6 +19,7 @@ export default async function CouponsPage({
 }) {
   const session = await auth();
   const locale = await getLocale();
+  const isSv = locale === "sv";
 
   if (!session?.user) redirect({ href: "/auth/login", locale });
 

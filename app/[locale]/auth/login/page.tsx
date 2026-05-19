@@ -10,7 +10,8 @@ export default function LoginPage() {
   const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") ?? `/${locale}`;
+  const callbackUrl =
+    searchParams.get("callbackUrl") ?? `/${locale}/competitions`;
   const isSv = locale === "sv";
 
   const [tab, setTab] = useState<"magic" | "password">("magic");
@@ -58,7 +59,7 @@ export default function LoginPage() {
             : "Incorrect email or password.",
         );
       } else {
-        router.push(callbackUrl);
+        window.location.href = callbackUrl;
       }
     });
   }

@@ -6,8 +6,6 @@ import { getLocale } from "next-intl/server";
 import { redirect, Link } from "@/i18n/routing";
 import { notFound } from "next/navigation";
 import { getLeaderboard } from "@/lib/scoring";
-import { getGroupStandings } from "@/lib/group-standings";
-import { GroupTablesGrid } from "@/components/competitions/GroupTable";
 import { VisibilityToggle } from "@/components/competitions/VisibilityToggle";
 import { cn } from "@/lib/utils";
 
@@ -44,7 +42,6 @@ export default async function CompetitionStandingsPage({
 
   const [leaderboard, groupStandings] = await Promise.all([
     getLeaderboard(competition.id),
-    getGroupStandings(competition.tournament.id),
   ]);
 
   const isSv = locale === "sv";
@@ -360,9 +357,6 @@ export default async function CompetitionStandingsPage({
           })}
         </div>
       </div>
-
-      {/* ── Group standings ──────────────────────────────────────────── */}
-      <GroupTablesGrid groups={groupStandings} locale={locale} />
 
       {/* Footer */}
       <div
