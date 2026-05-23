@@ -19,7 +19,7 @@ frontend:
         - echo "EMAIL_FROM=$EMAIL_FROM" >> .env.production
         - npx prisma migrate deploy
         - npm run build
-    artifacts:
+  artifacts:
     baseDirectory: .next
     files:
       - "**/*"
