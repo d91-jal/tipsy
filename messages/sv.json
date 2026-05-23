@@ -3,7 +3,7 @@
     "home": "Hem",
     "tips": "Tips",
     "standings": "Ställning",
-    "competitions": "Tävlingar",
+    "competitions": "Turneringar",
     "admin": "Admin",
     "logout": "Logga ut",
     "login": "Logga in"
@@ -31,13 +31,13 @@
     "noResult": "Ej spelad"
   },
   "competitions": {
-    "title": "Tävlingar",
+    "title": "Turneringar",
     "join": "Gå med",
     "joined": "Gick med!",
     "member": "Medlem",
     "participants": "deltagare",
     "viewStandings": "Se ställning",
-    "noCompetitions": "Inga aktiva tävlingar ännu",
+    "noCompetitions": "Inga aktiva turneringar ännu",
     "privateLabel": "Privat",
     "enterCode": "Ange kod",
     "wrongCode": "Fel kod",
@@ -73,7 +73,7 @@
     "title": "Admin",
     "results": "Mata in resultat",
     "odds": "Hantera odds",
-    "competitions": "Tävlingar",
+    "competitions": "Turneringar",
     "simulate": "Simulering",
     "users": "Användare",
     "inviteUser": "Bjud in användare",

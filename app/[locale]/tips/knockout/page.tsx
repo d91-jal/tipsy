@@ -33,7 +33,7 @@ export default async function KnockoutPage() {
       homeTeam: true,
       awayTeam: true,
       odds: true,
-      matchTips: { where: { userId: session.user.id } },
+      matchTips: { where: { userId: session!.user.id } },
     },
   });
 
@@ -216,7 +216,6 @@ export default async function KnockoutPage() {
               <CouponMatchRow
                 key={match.id}
                 match={serialized as any}
-                rowIndex={idx + 1}
                 locale={locale}
               />
             );

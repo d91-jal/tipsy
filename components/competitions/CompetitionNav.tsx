@@ -17,7 +17,7 @@ export function CompetitionNav({ slug, name, locale }: CompetitionNavProps) {
   const tabs = [
     {
       href: `/competitions/${slug}`,
-      label: isSv ? "Ledartavla" : "Standings",
+      label: isSv ? "Topplista" : "Standings",
       match: (p: string) =>
         p.endsWith(`/competitions/${slug}`) ||
         p.includes(`/competitions/${slug}/player`),
@@ -54,7 +54,7 @@ export function CompetitionNav({ slug, name, locale }: CompetitionNavProps) {
             textDecoration: "none",
           }}
         >
-          {isSv ? "← Tävlingar" : "← Competitions"}
+          {isSv ? "← Turneringar" : "← Tournaments"}
         </Link>
         <span
           style={{

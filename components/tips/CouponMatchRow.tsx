@@ -113,7 +113,7 @@ export function CouponMatchRow({ match, locale }: CouponMatchRowProps) {
 
   const CELLS: { outcome: Outcome; mark: string }[] = [
     { outcome: "HOME", mark: "1" },
-    { outcome: "DRAW", mark: "X" },
+    { outcome: "DRAW", mark: "x" },
     { outcome: "AWAY", mark: "2" },
   ];
 
@@ -195,7 +195,7 @@ export function CouponMatchRow({ match, locale }: CouponMatchRowProps) {
             style={{
               // Taller cell when odds are shown
               flexDirection: "column",
-              gap: hasOdds ? 2 : 0,
+              gap: hasOdds ? 5 : 0,
               paddingTop: hasOdds ? 8 : 0,
               paddingBottom: hasOdds ? 8 : 0,
             }}
@@ -216,7 +216,7 @@ export function CouponMatchRow({ match, locale }: CouponMatchRowProps) {
               <span
                 style={{
                   fontFamily: "var(--f-mono)",
-                  fontSize: 9,
+                  fontSize: 10,
                   lineHeight: 1,
                   letterSpacing: "0.04em",
                   color: isPicked

@@ -176,7 +176,7 @@ async function importTeams(rows: TeamRow[], tournamentId: string) {
     updated = 0;
 
   // Ensure all groups exist
-  const groupNames = [...new Set(rows.map((r) => r.group))];
+  const groupNames = Array.from(new Set(rows.map((r) => r.group)));
   const groupMap = new Map<string, string>(); // name → id
 
   for (const name of groupNames) {

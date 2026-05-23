@@ -22,6 +22,7 @@ export default async function CouponsPage({
   const isSv = locale === "sv";
 
   if (!session?.user) redirect({ href: "/auth/login", locale });
+  const userId = session!.user.id;
 
   const competition = await prisma.competition.findUnique({
     where: { slug },
@@ -43,7 +44,7 @@ export default async function CouponsPage({
     where: {
       competitionId_userId: {
         competitionId: competition.id,
-        userId: session.user.id,
+        userId: userId,
       },
     },
   });
@@ -60,7 +61,7 @@ export default async function CouponsPage({
 
   // Only show other users' tips if deadline passed or tipsPublic
   const visibleMemberIds = members
-    .filter((m) => m.userId === session.user.id || isLocked || m.tipsPublic)
+    .filter((m) => m.userId === userId || isLocked || m.tipsPublic)
     .map((m) => m.userId);
 
   // Fetch groups with matches and all tips
@@ -106,15 +107,21 @@ export default async function CouponsPage({
     <div className="space-y-6 max-w-4xl">
       <BackLink
         href={`/competitions/${slug}`}
-        label={isSv ? "Tillbaka till ställningen" : "Back to standings"}
+        label={isSv ? "Tillbaka till topplistan" : "Back to standings"}
       />
       <CouponsView
         competition={competition}
         members={members}
-        groups={groups}
+        groups={groups.map((g) => ({
+          ...g,
+          matches: g.matches.map((m) => ({
+            ...m,
+            scheduledAt: m.scheduledAt.toISOString(),
+          })),
+        }))}
         tournamentTips={tournamentTips}
         tournamentActual={tournamentActual}
-        currentUserId={session.user.id}
+        currentUserId={userId}
         isLocked={isLocked}
         locale={locale}
       />

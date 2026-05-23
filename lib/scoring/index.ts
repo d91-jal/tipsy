@@ -88,7 +88,7 @@ export async function scoreGroupAdvancementTips(
   const oddsMap = new Map<string, number>();
   for (const team of teams) {
     if (team.advancementOdds) {
-      oddsMap.set(team.id, Number(team.advancementOdds.avgValue));
+      oddsMap.set(team.id, Number(team.advancementOdds[0].avgValue));
     }
   }
 

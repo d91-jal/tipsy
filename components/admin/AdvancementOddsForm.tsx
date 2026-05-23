@@ -25,15 +25,21 @@ export function AdvancementOddsForm({
   const [entries, setEntries] = useState<TeamOddsEntry[]>(
     group.teams.map((t) => ({
       teamId: t.id,
-      value: t.advancementOdds ? Number(t.advancementOdds.avgValue).toFixed(2) : "",
-    }))
+      value: t.advancementOdds
+        ? Number(t.advancementOdds[0].avgValue).toFixed(2)
+        : "",
+    })),
   );
-  const [saved, setSaved] = useState(group.teams.every((t) => t.advancementOdds));
+  const [saved, setSaved] = useState(
+    group.teams.every((t) => t.advancementOdds),
+  );
   const [isPending, startTransition] = useTransition();
 
   function update(teamId: string, value: string) {
     setSaved(false);
-    setEntries((prev) => prev.map((e) => (e.teamId === teamId ? { ...e, value } : e)));
+    setEntries((prev) =>
+      prev.map((e) => (e.teamId === teamId ? { ...e, value } : e)),
+    );
   }
 
   async function handleSave() {
@@ -55,10 +61,12 @@ export function AdvancementOddsForm({
   }
 
   return (
-    <div className={cn(
-      "rounded-xl border bg-white p-3 space-y-2",
-      saved ? "border-green-200" : "border-slate-200"
-    )}>
+    <div
+      className={cn(
+        "rounded-xl border bg-white p-3 space-y-2",
+        saved ? "border-green-200" : "border-slate-200",
+      )}
+    >
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-slate-700">
           {locale === "sv" ? `Grupp ${group.name}` : `Group ${group.name}`}
@@ -86,8 +94,13 @@ export function AdvancementOddsForm({
           );
         })}
       </div>
-      <Button size="sm" className="w-full" onClick={handleSave} loading={isPending}
-        variant={saved ? "secondary" : "default"}>
+      <Button
+        size="sm"
+        className="w-full"
+        onClick={handleSave}
+        loading={isPending}
+        variant={saved ? "outline" : "primary"}
+      >
         {saved ? "✓" : locale === "sv" ? "Spara" : "Save"}
       </Button>
     </div>

@@ -21,7 +21,7 @@ export default async function TournamentTipPage() {
   });
 
   const existingTip = await prisma.tournamentTip.findUnique({
-    where: { userId: session.user.id },
+    where: { userId: session!.user.id },
     select: {
       finalist1Id: true,
       finalist2Id: true,

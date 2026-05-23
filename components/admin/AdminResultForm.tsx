@@ -139,10 +139,10 @@ export function AdminResultForm({ match, locale }: AdminResultFormProps) {
         loading={isPending}
         variant={
           saved
-            ? "secondary"
+            ? "outline"
             : isFinished && hasChanged
               ? "destructive"
-              : "default"
+              : "primary"
         }
         className="shrink-0"
       >

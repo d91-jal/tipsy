@@ -28,7 +28,7 @@ export default async function GroupStagePage() {
           homeTeam: true,
           awayTeam: true,
           odds: true,
-          matchTips: { where: { userId: session.user.id } },
+          matchTips: { where: { userId: session!.user.id } },
         },
       },
     },
@@ -192,7 +192,6 @@ export default async function GroupStagePage() {
                 <CouponMatchRow
                   key={match.id}
                   match={serialized as any}
-                  rowIndex={rowIndex++}
                   locale={locale}
                 />
               );

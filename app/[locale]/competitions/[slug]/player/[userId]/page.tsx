@@ -17,9 +17,8 @@ export default async function PlayerPage({
 }) {
   const session = await auth();
   const locale = await getLocale();
-
   if (!session?.user) redirect({ href: "/auth/login", locale });
-
+  
   const competition = await prisma.competition.findUnique({
     where: { slug },
     include: {
@@ -35,7 +34,7 @@ export default async function PlayerPage({
     where: {
       competitionId_userId: {
         competitionId: competition.id,
-        userId: session.user.id,
+        userId: session!.user.id,
       },
     },
   });
@@ -48,7 +47,7 @@ export default async function PlayerPage({
   });
   if (!playerMembership) notFound();
 
-  const isOwnProfile = session.user.id === userId;
+  const isOwnProfile = session!.user.id === userId;
   const isLocked = new Date() > new Date(competition.tournament.oddsLockDate);
   const canView = isOwnProfile || isLocked || playerMembership.tipsPublic;
 
@@ -126,7 +125,7 @@ export default async function PlayerPage({
       {/* Back link */}
       <BackLink
         href={`/competitions/${slug}`}
-        label={isSv ? "Tillbaka till ställningen" : "Back to standings"}
+        label={isSv ? "Tillbaka till topplistan" : "Back to standings"}
       />
 
       {/* Player header */}
@@ -175,8 +174,17 @@ export default async function PlayerPage({
         </div>
       ) : (
         <PlayerCoupon
-          groups={groups}
-          knockoutMatches={knockoutMatches}
+          groups={groups.map((g) => ({
+            ...g,
+            matches: g.matches.map((m) => ({
+              ...m,
+              scheduledAt: m.scheduledAt.toISOString(),
+            })),
+          }))}
+          knockoutMatches={knockoutMatches.map((m) => ({
+            ...m,
+            scheduledAt: m.scheduledAt.toISOString(),
+          }))}
           advancementTips={advancementTips}
           tournamentTip={tournamentTip}
           locale={locale}

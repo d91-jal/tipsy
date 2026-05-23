@@ -28,7 +28,7 @@ export function AdminAdvancementForm({
           existing.find((a) => a.position === 1)?.teamId ?? "",
           existing.find((a) => a.position === 2)?.teamId ?? "",
         ].filter(Boolean)
-      : []
+      : [],
   );
   const [saved, setSaved] = useState(existing.length >= 2);
   const [isPending, startTransition] = useTransition();
@@ -75,7 +75,7 @@ export function AdminAdvancementForm({
                 "w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs transition-all",
                 isSelected
                   ? "bg-pitch-50 text-pitch-700 border border-pitch-300 font-medium"
-                  : "border border-transparent text-slate-600 hover:bg-slate-50"
+                  : "border border-transparent text-slate-600 hover:bg-slate-50",
               )}
             >
               {isSelected && (
@@ -95,7 +95,7 @@ export function AdminAdvancementForm({
         onClick={handleSave}
         disabled={selected.length !== 2 || isPending}
         loading={isPending}
-        variant={saved ? "secondary" : "default"}
+        variant={saved ? "outline" : "primary"}
       >
         {saved ? "✓" : locale === "sv" ? "Spara" : "Save"}
       </Button>

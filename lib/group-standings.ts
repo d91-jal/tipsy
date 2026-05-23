@@ -96,12 +96,12 @@ export async function getGroupStandings(
     }
 
     // Compute goal difference
-    for (const row of rows.values()) {
+    for (const row of Array.from(rows.values())) {
       row.goalDiff = row.goalsFor - row.goalsAgainst;
     }
 
     // Sort: points → goal diff → goals scored → FIFA code (alphabetical tiebreak)
-    const sorted = [...rows.values()].sort((a, b) => {
+    const sorted = [...Array.from(rows.values())].sort((a, b) => {
       if (b.points !== a.points) return b.points - a.points;
       if (b.goalDiff !== a.goalDiff) return b.goalDiff - a.goalDiff;
       if (b.goalsFor !== a.goalsFor) return b.goalsFor - a.goalsFor;

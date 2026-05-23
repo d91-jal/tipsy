@@ -101,7 +101,7 @@ export function Navbar({ session, locale }: NavbarProps) {
           </span>
         </Link>
 
-        {/* Desktop nav — bara Tävlingar */}
+        {/* Desktop nav — Tournaments */}
         <nav style={{ display: "flex", alignItems: "center", gap: 4 }}>
           {session && (
             <Link
@@ -123,7 +123,7 @@ export function Navbar({ session, locale }: NavbarProps) {
                 transition: "all 0.15s",
               }}
             >
-              {locale === "sv" ? "Tävlingar" : "Competitions"}
+              {locale === "sv" ? "Turneringar" : "Tournaments"}
             </Link>
           )}
 
@@ -295,7 +295,7 @@ export function Navbar({ session, locale }: NavbarProps) {
               textDecoration: "none",
             }}
           >
-            {locale === "sv" ? "Tävlingar" : "Competitions"}
+            {locale === "sv" ? "Turneringar" : "Tournaments"}
           </Link>
           {session.user?.role === "ADMIN" && (
             <Link

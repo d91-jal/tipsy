@@ -7,9 +7,11 @@ import { OddsForm } from "@/components/admin/OddsForm";
 import { AdvancementOddsForm } from "@/components/admin/AdvancementOddsForm";
 
 export default async function AdminOddsPage() {
-  const session = await auth();
   const locale = await getLocale();
-
+  const session = await auth();
+  if (!session?.user) redirect({ href: "/auth/login", locale }); 
+  const userId = session!.user.id;
+  
   if (!session?.user || session.user.role !== "ADMIN") {
     redirect({ href: "/", locale });
   }
@@ -73,7 +75,7 @@ export default async function AdminOddsPage() {
               key={group.id}
               group={group}
               locale={locale}
-              adminId={session.user.id}
+              adminId={userId}
             />
           ))}
         </div>
@@ -90,7 +92,7 @@ export default async function AdminOddsPage() {
               key={match.id}
               match={match}
               locale={locale}
-              adminId={session.user.id}
+              adminId={userId}
             />
           ))}
         </div>
@@ -108,7 +110,7 @@ export default async function AdminOddsPage() {
                 key={match.id}
                 match={match}
                 locale={locale}
-                adminId={session.user.id}
+                adminId={userId}
               />
             ))}
           </div>

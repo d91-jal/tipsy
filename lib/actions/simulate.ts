@@ -9,7 +9,8 @@ import { scoreMatchTips, scoreGroupAdvancementTips } from "@/lib/scoring";
 
 async function requireAdmin() {
   const session = await auth();
-  if (!session?.user || session.user.role !== "ADMIN") throw new Error("NOT_AUTHORIZED");
+  if (!session?.user || session.user.role !== "ADMIN")
+    throw new Error("NOT_AUTHORIZED");
   return session.user;
 }
 
@@ -22,7 +23,7 @@ function randomGoals(): number {
   const r = Math.random();
   if (r < 0.28) return 0;
   if (r < 0.58) return 1;
-  if (r < 0.80) return 2;
+  if (r < 0.8) return 2;
   if (r < 0.92) return 3;
   if (r < 0.98) return 4;
   return 5;
@@ -30,7 +31,7 @@ function randomGoals(): number {
 
 function randomOutcome(): "HOME" | "DRAW" | "AWAY" {
   const r = Math.random();
-  return r < 0.40 ? "HOME" : r < 0.65 ? "DRAW" : "AWAY";
+  return r < 0.4 ? "HOME" : r < 0.65 ? "DRAW" : "AWAY";
 }
 
 function pick<T>(arr: T[]): T {
@@ -38,26 +39,46 @@ function pick<T>(arr: T[]): T {
 }
 
 const BOT_NAMES = [
-  "Tipparen", "Goalmachine", "Oddsen", "Fotbollsexpert", "VM-Ninja",
-  "Halvtidsanalytiker", "xG-Guru", "Straffspecialist", "Torbjörn Tipp",
-  "Anita Analys", "Bert Bolltips", "Dora Deadline", "Erik Elva",
-  "Frida Final", "Gustav Grupp", "Hanna Hattrick", "Ivan Insats",
-  "Jenny Joker", "Karl Kvart", "Lisa Ligan",
+  "Tipparen",
+  "Goalmachine",
+  "Oddsen",
+  "Fotbollsexpert",
+  "VM-Ninja",
+  "Halvtidsanalytiker",
+  "xG-Guru",
+  "Straffspecialist",
+  "Torbjörn Tipp",
+  "Anita Analys",
+  "Bert Bolltips",
+  "Dora Deadline",
+  "Erik Elva",
+  "Frida Final",
+  "Gustav Grupp",
+  "Hanna Hattrick",
+  "Ivan Insats",
+  "Jenny Joker",
+  "Karl Kvart",
+  "Lisa Ligan",
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CREATE SIMBOTS
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type SimBotResult = { success: boolean; created: number; error?: string };
+export type SimBotResult = {
+  success: boolean;
+  created: number;
+  error?: string;
+};
 
 export async function createSimBots(
   competitionId: string,
-  count: number
+  count: number,
 ): Promise<SimBotResult> {
   await requireAdmin();
 
-  if (count < 1 || count > 50) return { success: false, created: 0, error: "INVALID_COUNT" };
+  if (count < 1 || count > 50)
+    return { success: false, created: 0, error: "INVALID_COUNT" };
 
   const competition = await prisma.competition.findUnique({
     where: { id: competitionId },
@@ -109,7 +130,9 @@ export async function createSimBots(
     });
 
     // Generate random group-stage match tips (bypass deadline — simulation)
-    const groupMatches = competition.tournament.groups.flatMap((g) => g.matches);
+    const groupMatches = competition.tournament.groups.flatMap(
+      (g) => g.matches,
+    );
     for (const match of groupMatches) {
       if (!match.homeTeamId || !match.awayTeamId) continue;
       await prisma.matchTip.upsert({
@@ -174,7 +197,9 @@ export type AdvanceDayResult = {
   error?: string;
 };
 
-export async function advanceSimDay(competitionId: string): Promise<AdvanceDayResult> {
+export async function advanceSimDay(
+  competitionId: string,
+): Promise<AdvanceDayResult> {
   await requireAdmin();
 
   const competition = await prisma.competition.findUnique({
@@ -182,7 +207,13 @@ export async function advanceSimDay(competitionId: string): Promise<AdvanceDayRe
     include: { tournament: { select: { startDate: true, id: true } } },
   });
   if (!competition?.simulationMode) {
-    return { success: false, newDate: "", matchesResolved: 0, groupsCompleted: 0, error: "NOT_SIMULATION_MODE" };
+    return {
+      success: false,
+      newDate: "",
+      matchesResolved: 0,
+      groupsCompleted: 0,
+      error: "NOT_SIMULATION_MODE",
+    };
   }
 
   // Determine next simulated day
@@ -230,7 +261,7 @@ export async function advanceSimDay(competitionId: string): Promise<AdvanceDayRe
 
   // After resolving, check if any groups are now fully played
   let groupsCompleted = 0;
-  for (const groupId of affectedGroupIds) {
+  for (const groupId of Array.from(affectedGroupIds)) {
     const allGroupMatches = await prisma.match.findMany({
       where: { groupId, stage: "GROUP" },
     });
@@ -332,7 +363,7 @@ async function autoSetGroupAdvancements(groupId: string): Promise<void> {
 
 async function generateSimBotKnockoutTips(
   competitionId: string,
-  matchId: string
+  matchId: string,
 ): Promise<void> {
   const match = await prisma.match.findUnique({
     where: { id: matchId },
@@ -365,7 +396,9 @@ async function generateSimBotKnockoutTips(
 
 export type ResetResult = { success: boolean; removed: number; error?: string };
 
-export async function resetSimulation(competitionId: string): Promise<ResetResult> {
+export async function resetSimulation(
+  competitionId: string,
+): Promise<ResetResult> {
   await requireAdmin();
 
   const competition = await prisma.competition.findUnique({
@@ -385,7 +418,9 @@ export async function resetSimulation(competitionId: string): Promise<ResetResul
 
   // Delete all their tips
   await prisma.matchTip.deleteMany({ where: { userId: { in: botIds } } });
-  await prisma.groupAdvancementTip.deleteMany({ where: { userId: { in: botIds } } });
+  await prisma.groupAdvancementTip.deleteMany({
+    where: { userId: { in: botIds } },
+  });
   await prisma.tournamentTip.deleteMany({ where: { userId: { in: botIds } } });
 
   // Delete bot users (cascade deletes CompetitionMember too)
@@ -449,7 +484,9 @@ export type SimStatus = {
   matchesTotal: number;
 };
 
-export async function getSimStatus(competitionId: string): Promise<SimStatus | null> {
+export async function getSimStatus(
+  competitionId: string,
+): Promise<SimStatus | null> {
   const competition = await prisma.competition.findUnique({
     where: { id: competitionId },
     include: {
@@ -470,7 +507,7 @@ export async function getSimStatus(competitionId: string): Promise<SimStatus | n
     ? Math.ceil(
         (startOfDay(competition.simulatedDate).getTime() -
           startOfDay(competition.tournament.startDate).getTime()) /
-          86400000
+          86400000,
       )
     : -1;
 
@@ -484,7 +521,9 @@ export async function getSimStatus(competitionId: string): Promise<SimStatus | n
     totalDays,
     currentDay,
     botCount: competition.members.length,
-    matchesFinished: competition.tournament.matches.filter((m) => m.status === "FINISHED").length,
+    matchesFinished: competition.tournament.matches.filter(
+      (m) => m.status === "FINISHED",
+    ).length,
     matchesTotal: competition.tournament.matches.length,
   };
 }

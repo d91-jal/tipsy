@@ -101,7 +101,7 @@ export function GroupMatchCard({
             <Badge variant="muted">{t("match.deadlinePassed")}</Badge>
           )}
           {currentTip && !finished && (
-            <Badge variant="default" className="bg-pitch-50 text-pitch-700">
+            <Badge variant="green" className="bg-pitch-50 text-pitch-700">
               ✓{" "}
               {currentTip === "HOME" ? "1" : currentTip === "DRAW" ? "x" : "2"}
             </Badge>

@@ -62,7 +62,14 @@ export default async function AdminResultsPage() {
         )}
         <div className="space-y-2">
           {pendingMatches.map((match) => (
-            <AdminResultForm key={match.id} match={match} locale={locale} />
+            <AdminResultForm
+              key={match.id}
+              match={{
+                ...match,
+                scheduledAt: match.scheduledAt.toISOString(),
+              }}
+              locale={locale}
+            />
           ))}
         </div>
       </section>
@@ -140,7 +147,14 @@ export default async function AdminResultsPage() {
           </p>
           <div className="space-y-2">
             {finishedMatches.map((match) => (
-              <AdminResultForm key={match.id} match={match} locale={locale} />
+              <AdminResultForm
+                key={match.id}
+                match={{
+                  ...match,
+                  scheduledAt: match.scheduledAt.toISOString(),              
+                }}
+                locale={locale}
+              />
             ))}
           </div>
         </section>

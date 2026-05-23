@@ -8,6 +8,7 @@ import { notFound } from "next/navigation";
 import { getLeaderboard } from "@/lib/scoring";
 import { VisibilityToggle } from "@/components/competitions/VisibilityToggle";
 import { cn } from "@/lib/utils";
+import { ExportButton } from "@/components/competitions/ExportButton";
 
 export const revalidate = 60;
 
@@ -19,6 +20,7 @@ export default async function CompetitionStandingsPage({
   const session = await auth();
   const locale = await getLocale();
   if (!session?.user) redirect({ href: "/auth/login", locale });
+  const userId = session!.user.id;
 
   const competition = await prisma.competition.findUnique({
     where: { slug },
@@ -34,22 +36,19 @@ export default async function CompetitionStandingsPage({
     where: {
       competitionId_userId: {
         competitionId: competition.id,
-        userId: session.user.id,
+        userId: userId,
       },
     },
   });
   if (!myMembership) redirect({ href: "/competitions", locale });
 
-  const [leaderboard, groupStandings] = await Promise.all([
-    getLeaderboard(competition.id),
-  ]);
-
+  const leaderboard = await getLeaderboard(competition.id);
   const isSv = locale === "sv";
   const isLocked = new Date() > new Date(competition.tournament.oddsLockDate);
   const tournamentName = isSv
     ? competition.tournament.nameSv
     : competition.tournament.nameEn;
-  const myEntry = leaderboard.find((e) => e.userId === session.user.id);
+  const myEntry = leaderboard.find((e) => e.userId === userId);
 
   return (
     <div className="space-y-10">
@@ -154,7 +153,7 @@ export default async function CompetitionStandingsPage({
         >
           <VisibilityToggle
             competitionId={competition.id}
-            current={myMembership.tipsPublic}
+            current={myMembership!.tipsPublic}
             locale={locale}
           />
         </div>
@@ -222,7 +221,7 @@ export default async function CompetitionStandingsPage({
           }}
         >
           {leaderboard.map((entry, i) => {
-            const isMe = entry.userId === session.user.id;
+            const isMe = entry.userId === userId;
             const isFirst = entry.rank === 1;
             const canViewTips = isMe || isLocked || entry.tipsPublic;
 
@@ -378,6 +377,7 @@ export default async function CompetitionStandingsPage({
         >
           {isSv ? "Uppdateras efter varje match" : "Updated after every match"}
         </p>
+        <ExportButton slug={slug} locale={locale} />
         <Link
           href={`/competitions/${slug}/coupons` as any}
           style={{

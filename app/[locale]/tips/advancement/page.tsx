@@ -23,7 +23,7 @@ export default async function AdvancementPage() {
     include: {
       teams: { include: { advancementOdds: true }, orderBy: { nameSv: "asc" } },
       advancementTips: {
-        where: { userId: session.user.id },
+        where: { userId: session!.user.id },
         include: { firstTeam: true, secondTeam: true },
       },
     },
@@ -115,7 +115,7 @@ export default async function AdvancementPage() {
               teams: group.teams.map((t) => ({
                 ...t,
                 advancementOdds: t.advancementOdds
-                  ? { avgValue: Number(t.advancementOdds.avgValue) }
+                  ? { avgValue: Number(t.advancementOdds[0].avgValue) }
                   : null,
               })),
             }}

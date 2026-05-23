@@ -177,7 +177,7 @@ export const CardContent = ({
 // ── Badge / Pill ──────────────────────────────────────────────────────────────
 
 interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
-  variant?: "green" | "gold" | "red" | "dark" | "outline" | "muted";
+  variant?: "green" | "gold" | "red" | "dark" | "outline" | "muted" | "warning" | "success" | "error";
 }
 
 export const Badge = ({

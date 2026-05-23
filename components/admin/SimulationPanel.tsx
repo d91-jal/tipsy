@@ -2,9 +2,19 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { createSimBots, advanceSimDay, resetSimulation } from "@/lib/actions/simulate";
+import {
+  createSimBots,
+  advanceSimDay,
+  resetSimulation,
+} from "@/lib/actions/simulate";
 import type { SimStatus } from "@/lib/actions/simulate";
-import { Button, Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui";
 import { formatDate } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
@@ -13,7 +23,11 @@ interface SimulationPanelProps {
   locale: string;
 }
 
-type LogEntry = { time: string; msg: string; type: "info" | "success" | "error" };
+type LogEntry = {
+  time: string;
+  msg: string;
+  type: "info" | "success" | "error";
+};
 
 export function SimulationPanel({ status, locale }: SimulationPanelProps) {
   const isSv = locale === "sv";
@@ -33,7 +47,10 @@ export function SimulationPanel({ status, locale }: SimulationPanelProps) {
     startTransition(async () => {
       const res = await createSimBots(status.competitionId, botCount);
       if (res.success) {
-        addLog(`✓ ${res.created} ${isSv ? "bottar skapade med slumpmässiga tips" : "bots created with random tips"}`, "success");
+        addLog(
+          `✓ ${res.created} ${isSv ? "bottar skapade med slumpmässiga tips" : "bots created with random tips"}`,
+          "success",
+        );
       } else {
         addLog(`✗ ${res.error}`, "error");
       }
@@ -47,14 +64,16 @@ export function SimulationPanel({ status, locale }: SimulationPanelProps) {
     startTransition(async () => {
       const res = await advanceSimDay(status.competitionId);
       if (res.success) {
-        const dateStr = new Date(res.newDate).toLocaleDateString(isSv ? "sv-SE" : "en-GB");
+        const dateStr = new Date(res.newDate).toLocaleDateString(
+          isSv ? "sv-SE" : "en-GB",
+        );
         addLog(
           `📅 ${dateStr} — ${res.matchesResolved} ${isSv ? "matcher" : "matches"}${
             res.groupsCompleted > 0
               ? `, ${res.groupsCompleted} ${isSv ? "grupper klara" : "groups complete"}`
               : ""
           }`,
-          "success"
+          "success",
         );
       } else {
         addLog(`✗ ${res.error}`, "error");
@@ -65,12 +84,22 @@ export function SimulationPanel({ status, locale }: SimulationPanelProps) {
   }
 
   async function handleReset() {
-    if (!confirm(isSv ? "Återställ all simuleringsdata? Kan inte ångras." : "Reset all simulation data? Cannot be undone.")) return;
+    if (
+      !confirm(
+        isSv
+          ? "Återställ all simuleringsdata? Kan inte ångras."
+          : "Reset all simulation data? Cannot be undone.",
+      )
+    )
+      return;
     setLoading("reset");
     startTransition(async () => {
       const res = await resetSimulation(status.competitionId);
       if (res.success) {
-        addLog(`🔄 ${isSv ? "Återställd" : "Reset"} — ${res.removed} ${isSv ? "bottar borttagna" : "bots removed"}`, "info");
+        addLog(
+          `🔄 ${isSv ? "Återställd" : "Reset"} — ${res.removed} ${isSv ? "bottar borttagna" : "bots removed"}`,
+          "info",
+        );
       } else {
         addLog(`✗ ${res.error}`, "error");
       }
@@ -79,11 +108,13 @@ export function SimulationPanel({ status, locale }: SimulationPanelProps) {
     });
   }
 
-  const progressPct = status.totalDays > 0
-    ? Math.max(0, Math.min(100, (status.currentDay / status.totalDays) * 100))
-    : 0;
+  const progressPct =
+    status.totalDays > 0
+      ? Math.max(0, Math.min(100, (status.currentDay / status.totalDays) * 100))
+      : 0;
 
-  const isFinished = status.matchesFinished >= status.matchesTotal && status.matchesTotal > 0;
+  const isFinished =
+    status.matchesFinished >= status.matchesTotal && status.matchesTotal > 0;
 
   return (
     <div className="space-y-4">
@@ -108,14 +139,23 @@ export function SimulationPanel({ status, locale }: SimulationPanelProps) {
           {
             label: isSv ? "Status" : "Status",
             value: isFinished
-              ? (isSv ? "Klar" : "Done")
+              ? isSv
+                ? "Klar"
+                : "Done"
               : status.currentDay < 0
-                ? (isSv ? "Ej startad" : "Not started")
-                : (isSv ? "Pågår" : "Running"),
+                ? isSv
+                  ? "Ej startad"
+                  : "Not started"
+                : isSv
+                  ? "Pågår"
+                  : "Running",
             icon: isFinished ? "🏆" : status.currentDay < 0 ? "⏸" : "▶",
           },
         ].map(({ label, value, icon }) => (
-          <div key={label} className="rounded-xl border border-slate-200 bg-white p-3 text-center">
+          <div
+            key={label}
+            className="rounded-xl border border-slate-200 bg-white p-3 text-center"
+          >
             <div className="text-xl mb-1">{icon}</div>
             <div className="font-bold text-slate-800">{value}</div>
             <div className="text-xs text-slate-400 mt-0.5">{label}</div>
@@ -169,7 +209,7 @@ export function SimulationPanel({ status, locale }: SimulationPanelProps) {
               onClick={handleCreateBots}
               loading={loading === "bots"}
               disabled={!!loading}
-              variant="secondary"
+              variant="outline"
             >
               🤖 {isSv ? "Skapa bottar" : "Create bots"}
             </Button>

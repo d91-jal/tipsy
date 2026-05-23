@@ -9,6 +9,7 @@ export default async function CompetitionsPage() {
   const session = await auth();
   const locale = await getLocale();
   if (!session?.user) redirect({ href: "/auth/login", locale });
+  const userId = session!.user.id;
 
   const competitions = await prisma.competition.findMany({
     where: { tournament: { isActive: true } },
@@ -21,7 +22,7 @@ export default async function CompetitionsPage() {
 
   const myIds = new Set(
     competitions
-      .filter((c) => c.members.some((m) => m.userId === session.user.id))
+      .filter((c) => c.members.some((m) => m.userId === userId))
       .map((c) => c.id),
   );
 
@@ -45,12 +46,12 @@ export default async function CompetitionsPage() {
             margin: "0 0 12px",
           }}
         >
-          {isSv ? "Tävlingar." : "Competitions."}
+          {isSv ? "Turneringar." : "Tournaments."}
         </h1>
         <p style={{ fontSize: 16, color: "var(--ink-soft)", margin: 0 }}>
           {isSv
-            ? "Gå med i en tävling för att se topplistan och jämföra tips."
-            : "Join a competition to view the standings and compare tips."}
+            ? "Gå med i en turnering för att se topplistan och jämföra tips."
+            : "Join a tournament to view the standings and compare tips."}
         </p>
       </div>
 
@@ -68,7 +69,7 @@ export default async function CompetitionsPage() {
             color: "var(--ink-faint)",
           }}
         >
-          {isSv ? "Inga aktiva tävlingar ännu" : "No active competitions yet"}
+          {isSv ? "Inga aktiva turneringar ännu" : "No active tournaments yet"}
         </div>
       )}
 

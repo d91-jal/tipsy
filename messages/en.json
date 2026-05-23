@@ -3,7 +3,7 @@
     "home": "Home",
     "tips": "Tips",
     "standings": "Standings",
-    "competitions": "Competitions",
+    "competitions": "Tournaments",
     "admin": "Admin",
     "logout": "Log out",
     "login": "Log in"
@@ -31,13 +31,13 @@
     "noResult": "Not played"
   },
   "competitions": {
-    "title": "Competitions",
+    "title": "Tournaments",
     "join": "Join",
     "joined": "Joined!",
     "member": "Member",
     "participants": "participants",
     "viewStandings": "View standings",
-    "noCompetitions": "No active competitions yet",
+    "noCompetitions": "No active tournaments yet",
     "privateLabel": "Private",
     "enterCode": "Enter code",
     "wrongCode": "Wrong code",
@@ -73,7 +73,7 @@
     "title": "Admin",
     "results": "Enter results",
     "odds": "Manage odds",
-    "competitions": "Competitions",
+    "competitions": "Tournaments",
     "simulate": "Simulate",
     "users": "Users",
     "inviteUser": "Invite user",
