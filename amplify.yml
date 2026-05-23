@@ -8,9 +8,6 @@ frontend:
         # Run DB migrations (uses DATABASE_URL from Amplify env vars)
     build:
       commands:
-        - echo "DATABASE_URL=$DATABASE_URL" >> .env.production
-        - echo "AUTH_SECRET=$AUTH_SECRET" >> .env.production
-        - echo "NEXTAUTH_SECRET=$NEXTAUTH_SECRET" >> .env.production
         - echo "NEXTAUTH_URL=$NEXTAUTH_URL" >> .env.production
         - echo "AUTH_TRUST_HOST=true" >> .env.production
         - echo "EMAIL_SERVER_HOST=$EMAIL_SERVER_HOST" >> .env.production
