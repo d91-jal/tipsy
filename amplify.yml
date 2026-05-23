@@ -6,27 +6,24 @@ frontend:
         - npm ci
         - npx prisma generate
         # Run DB migrations (uses DATABASE_URL from Amplify env vars)
-        - npx prisma migrate deploy
     build:
       commands:
+        - echo "DATABASE_URL=$DATABASE_URL" >> .env.production
+        - echo "AUTH_SECRET=$AUTH_SECRET" >> .env.production
+        - echo "NEXTAUTH_SECRET=$NEXTAUTH_SECRET" >> .env.production
+        - echo "NEXTAUTH_URL=$NEXTAUTH_URL" >> .env.production
+        - echo "AUTH_TRUST_HOST=true" >> .env.production
+        - echo "EMAIL_SERVER_HOST=$EMAIL_SERVER_HOST" >> .env.production
+        - echo "EMAIL_SERVER_PORT=$EMAIL_SERVER_PORT" >> .env.production
+        - echo "EMAIL_SERVER_SECURE=$EMAIL_SERVER_SECURE" >> .env.production
+        - echo "EMAIL_FROM=$EMAIL_FROM" >> .env.production
+        - npx prisma migrate deploy
         - npm run build
-  artifacts:
+    artifacts:
     baseDirectory: .next
     files:
-      - '**/*'
+      - "**/*"
   cache:
     paths:
       - node_modules/**/*
       - .next/cache/**/*
-
-  # Environment variables are set in the Amplify Console UI — NOT here.
-  # Required variables:
-  #   DATABASE_URL
-  #   NEXTAUTH_SECRET
-  #   NEXTAUTH_URL
-  #   EMAIL_SERVER_HOST
-  #   EMAIL_SERVER_PORT
-  #   EMAIL_SERVER_SECURE
-  #   EMAIL_SERVER_USER
-  #   EMAIL_SERVER_PASSWORD
-  #   EMAIL_FROM
