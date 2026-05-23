@@ -188,7 +188,7 @@ export function Navbar({ session, locale }: NavbarProps) {
                 }}
                 className="hidden sm:block"
               >
-                {session.user.name ?? session.user.email}
+                {session?.user?.name ?? session?.user?.email}
               </span>
               <button
                 onClick={() => signOut({ callbackUrl: `/${locale}` })}
@@ -297,7 +297,7 @@ export function Navbar({ session, locale }: NavbarProps) {
           >
             {locale === "sv" ? "Turneringar" : "Tournaments"}
           </Link>
-          {session.user?.role === "ADMIN" && (
+          {session?.user?.role === "ADMIN" && (
             <Link
               href="/admin/results"
               onClick={() => setMenuOpen(false)}
