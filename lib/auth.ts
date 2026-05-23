@@ -78,23 +78,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
   callbacks: {
     async jwt({ token, user }) {
-      // On sign in, persist id and role into the token
       if (user) {
+        console.log("[JWT callback] user:", user); // ← temporärt
         token.id = user.id;
         token.role = (user as any).role ?? "USER";
       }
+      console.log("[JWT callback] token:", token); // ← temporärt
       return token;
     },
     async session({ session, token }) {
-      if (session.user) {
+      console.log("[Session callback] token:", token); // ← temporärt
+      if (session.user && token) {
         session.user.id = token.id as string;
-        session.user.role = token.role as string;
-        // Fetch locale from DB (lightweight, cached by Next.js)
-        const dbUser = await prisma.user.findUnique({
-          where: { id: token.id as string },
-          select: { locale: true },
-        });
-        session.user.locale = dbUser?.locale ?? "sv";
+        session.user.role = (token.role as string) ?? "USER";
+        session.user.locale = (token.locale as string) ?? "sv";
       }
       return session;
     },

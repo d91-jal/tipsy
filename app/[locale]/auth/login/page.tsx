@@ -6,6 +6,8 @@ import { signIn } from "next-auth/react";
 import { useLocale } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
 
+export const dynamic = "force-dynamic";
+
 export default function LoginPage() {
   const locale = useLocale();
   const router = useRouter();
