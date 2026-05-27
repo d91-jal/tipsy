@@ -6,10 +6,11 @@ frontend:
         - npm ci
         - npx prisma generate
         # Run DB migrations (uses DATABASE_URL from Amplify env vars)
+        - npx prisma migrate deploy
     build:
       commands:
-        - npx prisma migrate deploy
-        - npm run build
+        #- npm run build
+        - npx next build
   artifacts:
     baseDirectory: .next
     files:

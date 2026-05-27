@@ -36,3 +36,8 @@ docker-compose.override.yml
 .aws/
 amplify/.config/local-*
 amplify/logs/
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
