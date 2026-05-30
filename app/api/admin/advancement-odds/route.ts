@@ -1,15 +1,18 @@
 // app/api/admin/advancement-odds/route.ts
+export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { z } from "zod";
 
 const schema = z.object({
-  entries: z.array(z.object({
-    teamId: z.string(),
-    value: z.number().min(1.01),
-    adminId: z.string(),
-  })),
+  entries: z.array(
+    z.object({
+      teamId: z.string(),
+      value: z.number().min(1.01),
+      adminId: z.string(),
+    }),
+  ),
 });
 
 export async function POST(req: NextRequest) {
@@ -42,8 +45,8 @@ export async function POST(req: NextRequest) {
             sources: [],
             recordedBy: session.user.id,
           },
-        })
-      )
+        }),
+      ),
   );
 
   return NextResponse.json({ ok: true });
