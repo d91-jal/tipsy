@@ -85,7 +85,7 @@ async function importMatchOdds(file: string) {
   const rows = parseCsv(readFileSync(file, "utf-8"));
 
   // Validate
-  for (const [i, row] of rows.entries()) {
+  for (const [i, row] of Array.from(rows.entries())) {
     for (const col of [
       "match_number",
       "home_odds",
@@ -107,7 +107,7 @@ async function importMatchOdds(file: string) {
     updated = 0,
     skipped = 0;
 
-  for (const [i, row] of rows.entries()) {
+  for (const [i, row] of Array.from(rows.entries())) {
     const matchNumber = Number(row.match_number);
     const match = await prisma.match.findFirst({
       where: { matchNumber, tournament: { slug: "wc2026" } },
@@ -175,7 +175,7 @@ async function importAdvancementOdds(file: string) {
   console.log(`\n🏅 Importing advancement odds from ${file}...`);
   const rows = parseCsv(readFileSync(file, "utf-8"));
 
-  for (const [i, row] of rows.entries()) {
+  for (const [i, row] of Array.from(rows.entries())) {
     for (const col of ["fifa_code", "odds", "source"]) {
       if (!row[col]) throw new Error(`Row ${i + 2}: missing '${col}'`);
     }
@@ -189,7 +189,7 @@ async function importAdvancementOdds(file: string) {
     updated = 0,
     skipped = 0;
 
-  for (const [i, row] of rows.entries()) {
+  for (const [i, row] of Array.from(rows.entries())) {
     const team = await prisma.team.findUnique({
       where: { fifaCode: row.fifa_code },
     });
@@ -239,7 +239,7 @@ async function importTournamentOdds(file: string) {
   console.log(`\n🏆 Importing tournament odds from ${file}...`);
   const rows = parseCsv(readFileSync(file, "utf-8"));
 
-  for (const [i, row] of rows.entries()) {
+  for (const [i, row] of Array.from(rows.entries())) {
     for (const col of ["fifa_code", "reach_final_odds", "win_odds", "source"]) {
       if (!row[col]) throw new Error(`Row ${i + 2}: missing '${col}'`);
     }
@@ -254,7 +254,7 @@ async function importTournamentOdds(file: string) {
     updated = 0,
     skipped = 0;
 
-  for (const [i, row] of rows.entries()) {
+  for (const [i, row] of Array.from(rows.entries())) {
     const team = await prisma.team.findUnique({
       where: { fifaCode: row.fifa_code },
     });
