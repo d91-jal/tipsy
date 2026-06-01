@@ -1,108 +1,290 @@
-// components/admin/AdvancementOddsForm.tsx
+// components/admin/AdvancementOddsForm.tsx  — designsystem-styling
 "use client";
 
 import { useState, useTransition } from "react";
-import { prisma } from "@/lib/db";
-import { cn } from "@/lib/utils";
-import { Button, Input } from "@/components/ui";
-import type { Prisma } from "@prisma/client";
+import { setAdvancementOdds } from "@/lib/actions/admin";
 
-type GroupWithTeams = Prisma.GroupGetPayload<{
-  include: { teams: { include: { advancementOdds: true } } };
-}>;
+type Team = {
+  id: string;
+  nameSv: string;
+  nameEn: string;
+  fifaCode: string;
+  advancementOdds: { avgValue: number } | null;
+};
 
-type TeamOddsEntry = { teamId: string; value: string };
+type Group = {
+  id: string;
+  name: string;
+  teams: Team[];
+};
+
+interface AdvancementOddsFormProps {
+  group: Group;
+  locale: string;
+  adminId: string;
+}
 
 export function AdvancementOddsForm({
   group,
   locale,
   adminId,
-}: {
-  group: GroupWithTeams;
-  locale: string;
-  adminId: string;
-}) {
-  const [entries, setEntries] = useState<TeamOddsEntry[]>(
-    group.teams.map((t) => ({
-      teamId: t.id,
-      value: t.advancementOdds
-        ? Number(t.advancementOdds[0].avgValue).toFixed(2)
-        : "",
-    })),
+}: AdvancementOddsFormProps) {
+  const isSv = locale === "sv";
+
+  const [values, setValues] = useState<Record<string, string>>(
+    Object.fromEntries(
+      group.teams.map((t) => [
+        t.id,
+        t.advancementOdds?.avgValue?.toString() ?? "",
+      ]),
+    ),
   );
+  const [source, setSource] = useState("Unibet");
   const [saved, setSaved] = useState(
-    group.teams.every((t) => t.advancementOdds),
+    group.teams.every((t) => t.advancementOdds?.avgValue),
   );
   const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState("");
 
-  function update(teamId: string, value: string) {
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
     setSaved(false);
-    setEntries((prev) =>
-      prev.map((e) => (e.teamId === teamId ? { ...e, value } : e)),
-    );
-  }
-
-  async function handleSave() {
     startTransition(async () => {
-      // Call server-side via fetch to our own API route
-      const res = await fetch("/api/admin/advancement-odds", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          entries: entries.map((e) => ({
-            teamId: e.teamId,
-            value: parseFloat(e.value),
-            adminId,
-          })),
-        }),
-      });
-      if (res.ok) setSaved(true);
+      try {
+        for (const team of group.teams) {
+          const val = values[team.id];
+          if (!val) continue;
+          const fd = new FormData();
+          fd.append("teamId", team.id);
+          fd.append("odds", val);
+          fd.append("source", source);
+          fd.append("adminId", adminId);
+          await setAdvancementOdds(fd);
+        }
+        setSaved(true);
+      } catch (err: any) {
+        setError(err.message ?? "Error");
+      }
     });
   }
 
+  const teamName = (t: Team) => (isSv ? t.nameSv : t.nameEn);
+  const allFilled = group.teams.every((t) => values[t.id]);
+
   return (
-    <div
-      className={cn(
-        "rounded-xl border bg-white p-3 space-y-2",
-        saved ? "border-green-200" : "border-slate-200",
-      )}
+    <form
+      onSubmit={handleSubmit}
+      style={{
+        borderRadius: "var(--r-card)",
+        overflow: "hidden",
+        boxShadow: "var(--sh-card)",
+        border: `1px solid ${saved ? "var(--green)" : "var(--hairline)"}`,
+        transition: "border-color 0.15s",
+      }}
     >
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-slate-700">
-          {locale === "sv" ? `Grupp ${group.name}` : `Group ${group.name}`}
-        </h3>
-        {saved && <span className="text-xs text-green-600">✓</span>}
-      </div>
-      <div className="space-y-1.5">
-        {group.teams.map((team) => {
-          const entry = entries.find((e) => e.teamId === team.id);
-          return (
-            <div key={team.id} className="flex items-center gap-2">
-              <span className="text-xs text-slate-600 flex-1">
-                {locale === "sv" ? team.nameSv : team.nameEn}
-              </span>
-              <Input
-                type="number"
-                step="0.01"
-                min="1.01"
-                placeholder="2.00"
-                value={entry?.value ?? ""}
-                onChange={(e) => update(team.id, e.target.value)}
-                className="w-20 text-xs font-mono"
-              />
-            </div>
-          );
-        })}
-      </div>
-      <Button
-        size="sm"
-        className="w-full"
-        onClick={handleSave}
-        loading={isPending}
-        variant={saved ? "outline" : "primary"}
+      {/* Header */}
+      <div
+        style={{
+          background: "var(--green-deep)",
+          padding: "10px 16px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          borderBottom: "2px double var(--gold)",
+        }}
       >
-        {saved ? "✓" : locale === "sv" ? "Spara" : "Save"}
-      </Button>
-    </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span
+            style={{
+              display: "inline-flex",
+              width: 22,
+              height: 22,
+              borderRadius: "50%",
+              background: "var(--gold)",
+              color: "var(--green-deep)",
+              alignItems: "center",
+              justifyContent: "center",
+              fontFamily: "var(--f-mono)",
+              fontWeight: 700,
+              fontSize: 11,
+            }}
+          >
+            {group.name}
+          </span>
+          <span
+            style={{
+              fontFamily: "var(--f-display)",
+              fontWeight: 600,
+              fontSize: 15,
+              color: "var(--cream)",
+            }}
+          >
+            {isSv ? `Grupp ${group.name}` : `Group ${group.name}`}
+          </span>
+        </div>
+        {saved && (
+          <span
+            style={{
+              fontFamily: "var(--f-mono)",
+              fontSize: 9,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: "var(--gold)",
+            }}
+          >
+            ✓ {isSv ? "Satt" : "Set"}
+          </span>
+        )}
+      </div>
+
+      {/* Team rows */}
+      <div style={{ background: "var(--coupon-bg)" }}>
+        {group.teams.map((team, idx) => (
+          <div
+            key={team.id}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              padding: "9px 14px",
+              gap: 10,
+              borderBottom:
+                idx < group.teams.length - 1
+                  ? "1px solid var(--coupon-rule-soft)"
+                  : "none",
+              background:
+                idx % 2 === 0 ? "transparent" : "rgba(255,255,255,0.18)",
+            }}
+          >
+            {/* Team name */}
+            <span
+              style={{
+                fontFamily: "var(--f-sans)",
+                fontSize: 13.5,
+                color: "var(--coupon-ink)",
+                flex: 1,
+              }}
+            >
+              {teamName(team)}
+            </span>
+            <span
+              style={{
+                fontFamily: "var(--f-mono)",
+                fontSize: 9.5,
+                color: "rgba(0,0,0,0.35)",
+                letterSpacing: "0.08em",
+              }}
+            >
+              {team.fifaCode}
+            </span>
+
+            {/* Odds input */}
+            <input
+              type="number"
+              step="0.01"
+              min="1.01"
+              max="99"
+              value={values[team.id]}
+              onChange={(e) => {
+                setValues((prev) => ({ ...prev, [team.id]: e.target.value }));
+                setSaved(false);
+              }}
+              placeholder="1.65"
+              style={{
+                width: 64,
+                textAlign: "center",
+                fontFamily: "var(--f-mono)",
+                fontWeight: 600,
+                fontSize: 15,
+                color: "var(--green-deep)",
+                background: "#fff",
+                border: "1px solid var(--coupon-rule-soft)",
+                borderRadius: "var(--r-input)",
+                padding: "5px 4px",
+                outline: "none",
+              }}
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* Footer */}
+      <div
+        style={{
+          background: "#2d251a",
+          padding: "10px 14px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        {/* Source input */}
+        <input
+          type="text"
+          value={source}
+          onChange={(e) => setSource(e.target.value)}
+          placeholder="Unibet"
+          style={{
+            fontFamily: "var(--f-mono)",
+            fontSize: 10,
+            letterSpacing: "0.08em",
+            background: "rgba(255,255,255,0.08)",
+            border: "1px solid rgba(255,255,255,0.15)",
+            borderRadius: "var(--r-input)",
+            color: "rgba(242,240,235,0.7)",
+            padding: "4px 8px",
+            width: 80,
+            outline: "none",
+          }}
+        />
+
+        {error && (
+          <span
+            style={{
+              fontFamily: "var(--f-mono)",
+              fontSize: 9,
+              color: "var(--stamp-red)",
+            }}
+          >
+            {error}
+          </span>
+        )}
+
+        <button
+          type="submit"
+          disabled={isPending || !allFilled}
+          style={{
+            fontFamily: "var(--f-sans)",
+            fontWeight: 600,
+            fontSize: 12,
+            padding: "6px 14px",
+            borderRadius: "var(--r-pill)",
+            border: "none",
+            cursor: isPending || !allFilled ? "default" : "pointer",
+            background: saved
+              ? "rgba(242,240,235,0.15)"
+              : allFilled
+                ? "var(--gold)"
+                : "rgba(242,240,235,0.08)",
+            color: saved
+              ? "rgba(242,240,235,0.5)"
+              : allFilled
+                ? "var(--green-deep)"
+                : "rgba(242,240,235,0.3)",
+            transition: "all 0.15s",
+          }}
+        >
+          {isPending
+            ? "…"
+            : saved
+              ? isSv
+                ? "✓ Sparat"
+                : "✓ Saved"
+              : isSv
+                ? "Spara"
+                : "Save"}
+        </button>
+      </div>
+    </form>
   );
 }

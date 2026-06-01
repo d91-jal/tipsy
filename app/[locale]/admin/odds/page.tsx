@@ -9,9 +9,9 @@ import { AdvancementOddsForm } from "@/components/admin/AdvancementOddsForm";
 export default async function AdminOddsPage() {
   const locale = await getLocale();
   const session = await auth();
-  if (!session?.user) redirect({ href: "/auth/login", locale }); 
+  if (!session?.user) redirect({ href: "/auth/login", locale });
   const userId = session!.user.id;
-  
+
   if (!session?.user || session.user.role !== "ADMIN") {
     redirect({ href: "/", locale });
   }
@@ -64,12 +64,22 @@ export default async function AdminOddsPage() {
           : "Enter average odds from e.g. Unibet, Betsson and Bet365. Add one row per source and the average is calculated automatically."}
       </div>
 
-      {/* Group advancement odds */}
-      <section className="space-y-3">
-        <h2 className="text-lg font-semibold text-slate-700">
-          {locale === "sv" ? "Odds för avancemang (per lag)" : "Advancement odds (per team)"}
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      {/* Advancement odds section */}
+      <section style={{ marginBottom: 40 }}>
+        <div style={{ marginBottom: 12 }}>
+          <p className="eyebrow" style={{ marginBottom: 6 }}>
+            {locale === "sv"
+              ? "Odds för avancemang · per lag"
+              : "Advancement odds · per team"}
+          </p>
+        </div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+            gap: 12,
+          }}
+        >
           {groups.map((group) => (
             <AdvancementOddsForm
               key={group.id}
@@ -82,15 +92,20 @@ export default async function AdminOddsPage() {
       </section>
 
       {/* Match 1X2 odds — Group stage */}
-      <section className="space-y-3">
-        <h2 className="text-lg font-semibold text-slate-700">
-          {locale === "sv" ? "Matchodds — Gruppspel" : "Match odds — Group stage"}
-        </h2>
-        <div className="space-y-2">
-          {groupMatches.map((match) => (
+      <section style={{ marginBottom: 40 }}>
+        <div style={{ marginBottom: 12 }}>
+          <p className="eyebrow" style={{ marginBottom: 6 }}>
+            {locale === "sv" ? "Matchodds · 1X2" : "Match odds · 1X2"}
+          </p>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          {matches.map((match) => (
             <OddsForm
               key={match.id}
-              match={match}
+              match={{
+                ...match,
+                scheduledAt: match.scheduledAt.toISOString(),
+              }}
               locale={locale}
               adminId={userId}
             />
@@ -98,17 +113,23 @@ export default async function AdminOddsPage() {
         </div>
       </section>
 
-      {/* Knockout odds */}
       {knockoutMatches.length > 0 && (
-        <section className="space-y-3">
-          <h2 className="text-lg font-semibold text-slate-700">
-            {locale === "sv" ? "Matchodds — Slutspel" : "Match odds — Knockout"}
-          </h2>
-          <div className="space-y-2">
+        <section style={{ marginBottom: 40 }}>
+          <div style={{ marginBottom: 12 }}>
+            <p className="eyebrow" style={{ marginBottom: 6 }}>
+              {locale === "sv"
+                ? "Matchodds · Slutspel"
+                : "Match odds · Knockout"}
+            </p>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             {knockoutMatches.map((match) => (
               <OddsForm
                 key={match.id}
-                match={match}
+                match={{
+                  ...match,
+                  scheduledAt: match.scheduledAt.toISOString(),
+                }}
                 locale={locale}
                 adminId={userId}
               />

@@ -280,106 +280,70 @@ export function TournamentTipForm({
           </div>
         </div>
 
-        {/* Winner — only shown when both finalists selected */}
-        {finalist1 && finalist2 && (
-          <div
+        {/* Winner — open to any team, not limited to finalists */}
+        <div
+          style={{
+            borderTop: "2px dashed var(--coupon-rule)",
+            paddingTop: 24,
+            marginBottom: 8,
+          }}
+        >
+          <div className="eyebrow" style={{ marginBottom: 8 }}>
+            🏆 {isSv ? "Vem vinner VM?" : "Who wins the World Cup?"}
+          </div>
+          <p
             style={{
-              borderTop: "2px dashed var(--coupon-rule)",
-              paddingTop: 24,
-              marginBottom: 8,
+              fontFamily: "var(--f-mono)",
+              fontSize: 10,
+              letterSpacing: "0.1em",
+              color: "rgba(0,0,0,0.4)",
+              margin: "0 0 12px",
             }}
           >
-            <div className="eyebrow" style={{ marginBottom: 12 }}>
-              🏆 {isSv ? "Vem vinner VM?" : "Who wins the World Cup?"}
-            </div>
-            <div style={{ display: "flex", gap: 12 }}>
-              {[finalist1Team, finalist2Team].filter(Boolean).map((team) => {
-                if (!team) return null;
-                const o = winOdds(team);
-                const isSelected = winner === team.id;
+            {isSv
+              ? "Kan vara vilket lag som helst — behöver inte vara ett av finallagen."
+              : "Can be any team — doesn't have to be one of your finalists."}
+          </p>
+          <div style={{ position: "relative" }}>
+            <select
+              value={winner}
+              onChange={(e) => {
+                setWinner(e.target.value);
+                setSaved(false);
+              }}
+              disabled={locked}
+              style={selectStyle}
+            >
+              <option value="">
+                {isSv ? "— Välj vinnare —" : "— Select winner —"}
+              </option>
+              {sortedTeams.map((t) => {
+                const o = winOdds(t);
+                const isFinalist = t.id === finalist1 || t.id === finalist2;
                 return (
-                  <button
-                    key={team.id}
-                    onClick={() => {
-                      if (!locked) {
-                        setWinner(team.id);
-                        setSaved(false);
-                      }
-                    }}
-                    disabled={locked}
-                    style={{
-                      flex: 1,
-                      padding: "20px 16px",
-                      border: isSelected
-                        ? "2px solid var(--gold)"
-                        : "1px solid var(--coupon-rule-soft)",
-                      borderRadius: "var(--r-coupon)",
-                      background: isSelected
-                        ? "rgba(203, 162, 88, 0.12)"
-                        : "rgba(255,255,255,0.5)",
-                      cursor: locked ? "default" : "pointer",
-                      transition: "all 0.15s",
-                      textAlign: "center",
-                    }}
-                  >
-                    {team.flagUrl && (
-                      <img
-                        src={team.flagUrl}
-                        alt={team.fifaCode}
-                        style={{
-                          width: 32,
-                          height: 20,
-                          objectFit: "cover",
-                          borderRadius: 2,
-                          marginBottom: 8,
-                        }}
-                      />
-                    )}
-                    <div
-                      style={{
-                        fontFamily: "var(--f-display)",
-                        fontWeight: 600,
-                        fontSize: 18,
-                        letterSpacing: "-0.01em",
-                        color: isSelected
-                          ? "var(--green-deep)"
-                          : "var(--coupon-ink)",
-                      }}
-                    >
-                      {teamName(team)}
-                    </div>
-                    <div
-                      style={{
-                        fontFamily: "var(--f-mono)",
-                        fontSize: 10,
-                        color: isSelected ? "var(--gold)" : "rgba(0,0,0,0.4)",
-                        letterSpacing: "0.1em",
-                        marginTop: 4,
-                      }}
-                    >
-                      {team.fifaCode}
-                      {o ? ` · ${o.toFixed(2)}` : ""}
-                    </div>
-                    {isSelected && (
-                      <div
-                        style={{
-                          fontFamily: "var(--f-mono)",
-                          fontSize: 9,
-                          letterSpacing: "0.14em",
-                          textTransform: "uppercase",
-                          color: "var(--gold)",
-                          marginTop: 6,
-                        }}
-                      >
-                        ✓ {isSv ? "Vald" : "Selected"}
-                      </div>
-                    )}
-                  </button>
+                  <option key={t.id} value={t.id}>
+                    {isFinalist ? "★ " : ""}
+                    {t.fifaCode} · {teamName(t)}
+                    {o ? ` · Vinna: ${o.toFixed(2)}` : ""}
+                  </option>
                 );
               })}
-            </div>
+            </select>
+            <span
+              style={{
+                position: "absolute",
+                right: 14,
+                top: "50%",
+                transform: "translateY(-50%)",
+                pointerEvents: "none",
+                color: "var(--ink-faint)",
+                fontSize: 12,
+              }}
+            >
+              ▼
+            </span>
           </div>
-        )}
+        </div>
 
         {state.error && (
           <p

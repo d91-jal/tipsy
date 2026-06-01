@@ -1,39 +1,27 @@
-// app/[locale]/admin/results/page.tsx
+// app/[locale]/admin/results/page.tsx  — designsystem-styling
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getLocale } from "next-intl/server";
 import { redirect } from "@/i18n/routing";
 import { AdminResultForm } from "@/components/admin/AdminResultForm";
-import { AdminAdvancementForm } from "@/components/admin/AdminAdvancementForm";
-import { formatDate, stageLabel } from "@/lib/utils";
 
 export default async function AdminResultsPage() {
-  const session = await auth();
   const locale = await getLocale();
+  const session = await auth();
+  if (!session?.user) redirect({ href: "/auth/login", locale });
+  if (session?.user.role !== "ADMIN") redirect({ href: "/", locale });
 
-  if (!session?.user || session.user.role !== "ADMIN") {
-    redirect({ href: "/", locale });
-  }
+  const isSv = locale === "sv";
 
-  // All finished + scheduled matches
+  const tournament = await prisma.tournament.findUniqueOrThrow({
+    where: { slug: "wc2026" },
+    select: { id: true },
+  });
+
   const matches = await prisma.match.findMany({
     where: { tournament: { slug: "wc2026" } },
     orderBy: { matchNumber: "asc" },
-    include: {
-      homeTeam: true,
-      awayTeam: true,
-      odds: true,
-    },
-  });
-
-  // Groups with teams for advancement form
-  const groups = await prisma.group.findMany({
-    where: { tournament: { slug: "wc2026" } },
-    orderBy: { name: "asc" },
-    include: {
-      teams: { orderBy: { nameSv: "asc" } },
-      actualAdvancements: { include: { team: true } },
-    },
+    include: { homeTeam: true, awayTeam: true, odds: true },
   });
 
   const pendingMatches = matches.filter(
@@ -41,123 +29,181 @@ export default async function AdminResultsPage() {
   );
   const finishedMatches = matches.filter((m) => m.status === "FINISHED");
 
+  const sectionStyle: React.CSSProperties = {
+    marginBottom: 32,
+  };
+
+  const sectionHeadStyle: React.CSSProperties = {
+    display: "flex",
+    alignItems: "baseline",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  };
+
   return (
-    <div className="space-y-8">
-      <h1 className="text-2xl font-bold text-slate-800">
-        {locale === "sv" ? "Admin — Resultat" : "Admin — Results"}
-      </h1>
+    <div>
+      {/* Page header */}
+      <div style={{ marginBottom: 32 }}>
+        <p className="eyebrow" style={{ marginBottom: 8 }}>
+          Admin · VM 2026
+        </p>
+        <h1
+          style={{
+            fontFamily: "var(--f-display)",
+            fontWeight: 600,
+            fontSize: 32,
+            letterSpacing: "-0.02em",
+            color: "var(--green-deep)",
+            margin: 0,
+          }}
+        >
+          {isSv ? "Matchresultat" : "Match Results"}
+        </h1>
+      </div>
+
+      {/* Progress */}
+      <div
+        style={{
+          display: "flex",
+          gap: 24,
+          marginBottom: 32,
+          padding: "16px 20px",
+          background: "#fff",
+          borderRadius: "var(--r-card)",
+          boxShadow: "var(--sh-card)",
+        }}
+      >
+        {[
+          {
+            label: isSv ? "Spelade" : "Played",
+            val: finishedMatches.length,
+            color: "var(--green)",
+          },
+          {
+            label: isSv ? "Återstår" : "Remaining",
+            val: pendingMatches.length,
+            color: "var(--gold)",
+          },
+          {
+            label: isSv ? "Totalt" : "Total",
+            val: matches.filter((m) => m.homeTeamId).length,
+            color: "var(--ink-faint)",
+          },
+        ].map(({ label, val, color }) => (
+          <div key={label}>
+            <div
+              style={{
+                fontFamily: "var(--f-mono)",
+                fontWeight: 700,
+                fontSize: 28,
+                color,
+                lineHeight: 1,
+              }}
+            >
+              {val}
+            </div>
+            <div
+              style={{
+                fontFamily: "var(--f-mono)",
+                fontSize: 10,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: "var(--ink-faint)",
+                marginTop: 4,
+              }}
+            >
+              {label}
+            </div>
+          </div>
+        ))}
+      </div>
 
       {/* Pending matches */}
-      <section className="space-y-3">
-        <h2 className="text-lg font-semibold text-slate-700">
-          {locale === "sv" ? "Matcher att rapportera" : "Matches to report"}{" "}
-          <span className="text-sm font-normal text-slate-400">
-            ({pendingMatches.length})
-          </span>
-        </h2>
-        {pendingMatches.length === 0 && (
-          <p className="text-slate-400 text-sm">
-            {locale === "sv" ? "Inga väntande matcher" : "No pending matches"}
-          </p>
-        )}
-        <div className="space-y-2">
-          {pendingMatches.map((match) => (
-            <AdminResultForm
-              key={match.id}
-              match={{
-                ...match,
-                scheduledAt: match.scheduledAt.toISOString(),
+      {pendingMatches.length > 0 && (
+        <div style={sectionStyle}>
+          <div style={sectionHeadStyle}>
+            <div>
+              <p className="eyebrow" style={{ marginBottom: 4 }}>
+                {isSv ? "Ej spelade" : "Not played"}
+              </p>
+            </div>
+            <span
+              style={{
+                fontFamily: "var(--f-mono)",
+                fontSize: 10.5,
+                color: "var(--ink-faint)",
               }}
-              locale={locale}
-            />
-          ))}
-        </div>
-      </section>
-
-      {/* Group advancement */}
-      <section className="space-y-3">
-        <h2 className="text-lg font-semibold text-slate-700">
-          {locale === "sv" ? "Vilka lag avancerade?" : "Which teams advanced?"}
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {groups.map((group) => (
-            <AdminAdvancementForm
-              key={group.id}
-              group={group}
-              locale={locale}
-            />
-          ))}
-        </div>
-      </section>
-
-      {/* Finished matches */}
-      {finishedMatches.length > 0 && (
-        <section className="space-y-3">
-          <h2 className="text-lg font-semibold text-slate-700">
-            {locale === "sv" ? "Spelade matcher" : "Finished matches"}{" "}
-            <span className="text-sm font-normal text-slate-400">
-              ({finishedMatches.length})
+            >
+              {pendingMatches.length} {isSv ? "matcher" : "matches"}
             </span>
-          </h2>
-          <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
-            <table className="w-full text-sm">
-              <tbody className="divide-y divide-slate-50">
-                {finishedMatches.map((match) => (
-                  <tr key={match.id} className="px-4 py-2">
-                    <td className="px-4 py-2 text-slate-400 w-16">
-                      #{match.matchNumber}
-                    </td>
-                    <td className="px-4 py-2 text-slate-600 text-xs">
-                      {stageLabel(match.stage, locale)}
-                    </td>
-                    <td className="px-4 py-2 text-right font-medium">
-                      {locale === "sv"
-                        ? match.homeTeam?.nameSv
-                        : match.homeTeam?.nameEn}
-                    </td>
-                    <td className="px-4 py-2 text-center font-bold text-pitch-700">
-                      {match.homeScore}–{match.awayScore}
-                    </td>
-                    <td className="px-4 py-2 font-medium">
-                      {locale === "sv"
-                        ? match.awayTeam?.nameSv
-                        : match.awayTeam?.nameEn}
-                    </td>
-                    <td className="px-4 py-2 text-slate-400 text-xs">
-                      {formatDate(match.scheduledAt, locale)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
           </div>
-        </section>
-      )}
-
-      {/* Finished matches — editable */}
-      {finishedMatches.length > 0 && (
-        <section className="space-y-3">
-          <h2 className="text-lg font-semibold text-slate-700">
-            {locale === "sv" ? "Korrigera resultat" : "Correct results"}
-          </h2>
-          <p className="text-xs text-slate-400">
-            {locale === "sv"
-              ? "Poäng räknas om automatiskt vid korrigering."
-              : "Points are automatically recalculated on correction."}
-          </p>
-          <div className="space-y-2">
-            {finishedMatches.map((match) => (
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            {pendingMatches.map((match) => (
               <AdminResultForm
                 key={match.id}
                 match={{
                   ...match,
-                  scheduledAt: match.scheduledAt.toISOString(),              
+                  scheduledAt: match.scheduledAt.toISOString(),
                 }}
                 locale={locale}
               />
             ))}
           </div>
-        </section>
+        </div>
+      )}
+
+      {/* Finished matches */}
+      {finishedMatches.length > 0 && (
+        <div style={sectionStyle}>
+          <div style={sectionHeadStyle}>
+            <div>
+              <p className="eyebrow" style={{ marginBottom: 4 }}>
+                {isSv
+                  ? "Spelade — klicka för att korrigera"
+                  : "Played — click to correct"}
+              </p>
+            </div>
+            <span
+              style={{
+                fontFamily: "var(--f-mono)",
+                fontSize: 10.5,
+                color: "var(--ink-faint)",
+              }}
+            >
+              {finishedMatches.length} {isSv ? "matcher" : "matches"}
+            </span>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            {finishedMatches.map((match) => (
+              <AdminResultForm
+                key={match.id}
+                match={{
+                  ...match,
+                  scheduledAt: match.scheduledAt.toISOString(),
+                }}
+                locale={locale}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {pendingMatches.length === 0 && finishedMatches.length === 0 && (
+        <div
+          style={{
+            padding: "48px 24px",
+            textAlign: "center",
+            border: "1px dashed var(--hairline)",
+            borderRadius: "var(--r-card)",
+            fontFamily: "var(--f-mono)",
+            fontSize: 11,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            color: "var(--ink-faint)",
+          }}
+        >
+          {isSv ? "Inga matcher att visa" : "No matches to show"}
+        </div>
       )}
     </div>
   );

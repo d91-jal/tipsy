@@ -1,223 +1,361 @@
-// components/admin/OddsForm.tsx
+// components/admin/OddsForm.tsx  — designsystem-styling
 "use client";
 
 import { useState, useTransition } from "react";
 import { setMatchOdds } from "@/lib/actions/admin";
-import { cn } from "@/lib/utils";
-import { Button, Input } from "@/components/ui";
-import type { Prisma } from "@prisma/client";
 
-type MatchWithOdds = Prisma.MatchGetPayload<{
-  include: { homeTeam: true; awayTeam: true; odds: true };
-}>;
+type Team = {
+  id: string;
+  nameSv: string;
+  nameEn: string;
+  fifaCode: string;
+};
 
-type OddsSource = { name: string; value: string };
-type OutcomeKey = "HOME" | "DRAW" | "AWAY";
+type MatchOdds = {
+  outcome: "HOME" | "DRAW" | "AWAY";
+  avgValue: number;
+};
 
-const DEFAULT_SOURCES = ["Unibet", "Betsson", "Bet365"];
+type MatchWithOdds = {
+  id: string;
+  matchNumber: number;
+  stage: string;
+  scheduledAt: string;
+  homeTeam: Team | null;
+  awayTeam: Team | null;
+  odds: MatchOdds[];
+};
 
-function buildInitialSources(existing: number | null): OddsSource[] {
-  if (existing) {
-    // Pre-fill with one row showing the existing average
-    return [{ name: "Average", value: existing.toFixed(2) }];
-  }
-  return DEFAULT_SOURCES.map((name) => ({ name, value: "" }));
-}
-
-export function OddsForm({
-  match,
-  locale,
-  adminId,
-}: {
+interface AdminOddsFormProps {
   match: MatchWithOdds;
   locale: string;
   adminId: string;
-}) {
-  const existingByOutcome = {
-    HOME: match.odds.find((o) => o.outcome === "HOME"),
-    DRAW: match.odds.find((o) => o.outcome === "DRAW"),
-    AWAY: match.odds.find((o) => o.outcome === "AWAY"),
+}
+
+export function OddsForm({ match, locale, adminId }: AdminOddsFormProps) {
+  const isSv = locale === "sv";
+
+  const existing = {
+    home:
+      match.odds.find((o) => o.outcome === "HOME")?.avgValue?.toString() ?? "",
+    draw:
+      match.odds.find((o) => o.outcome === "DRAW")?.avgValue?.toString() ?? "",
+    away:
+      match.odds.find((o) => o.outcome === "AWAY")?.avgValue?.toString() ?? "",
   };
 
-  const [sources, setSources] = useState<Record<OutcomeKey, OddsSource[]>>({
-    HOME: buildInitialSources(
-      existingByOutcome.HOME ? Number(existingByOutcome.HOME.avgValue) : null,
-    ),
-    DRAW: buildInitialSources(
-      existingByOutcome.DRAW ? Number(existingByOutcome.DRAW.avgValue) : null,
-    ),
-    AWAY: buildInitialSources(
-      existingByOutcome.AWAY ? Number(existingByOutcome.AWAY.avgValue) : null,
-    ),
-  });
-  const [expanded, setExpanded] = useState(false);
-  const [saved, setSaved] = useState(match.odds.length === 3);
+  const [home, setHome] = useState(existing.home);
+  const [draw, setDraw] = useState(existing.draw);
+  const [away, setAway] = useState(existing.away);
+  const [source, setSource] = useState("Unibet");
+  const [saved, setSaved] = useState(match.odds.length > 0);
+  const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
 
-  const homeName =
-    locale === "sv" ? match.homeTeam?.nameSv : match.homeTeam?.nameEn;
-  const awayName =
-    locale === "sv" ? match.awayTeam?.nameSv : match.awayTeam?.nameEn;
+  const homeName = match.homeTeam
+    ? isSv
+      ? match.homeTeam.nameSv
+      : match.homeTeam.nameEn
+    : "?";
+  const awayName = match.awayTeam
+    ? isSv
+      ? match.awayTeam.nameSv
+      : match.awayTeam.nameEn
+    : "?";
 
-  function calcAvg(outcome: OutcomeKey): number {
-    const vals = sources[outcome]
-      .map((s) => parseFloat(s.value))
-      .filter((v) => !isNaN(v) && v > 0);
-    return vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
-  }
-
-  function updateSource(
-    outcome: OutcomeKey,
-    idx: number,
-    field: keyof OddsSource,
-    val: string,
-  ) {
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
     setSaved(false);
-    setSources((prev) => ({
-      ...prev,
-      [outcome]: prev[outcome].map((s, i) =>
-        i === idx ? { ...s, [field]: val } : s,
-      ),
-    }));
-  }
-
-  function addSource(outcome: OutcomeKey) {
-    setSources((prev) => ({
-      ...prev,
-      [outcome]: [...prev[outcome], { name: "", value: "" }],
-    }));
-  }
-
-  async function handleSave() {
-    const fd = new FormData();
-    fd.append("matchId", match.id);
-    fd.append(
-      "sources",
-      JSON.stringify({
-        HOME: sources.HOME.map((s) => ({
-          name: s.name,
-          value: parseFloat(s.value),
-        })).filter((s) => !isNaN(s.value) && s.value > 0),
-        DRAW: sources.DRAW.map((s) => ({
-          name: s.name,
-          value: parseFloat(s.value),
-        })).filter((s) => !isNaN(s.value) && s.value > 0),
-        AWAY: sources.AWAY.map((s) => ({
-          name: s.name,
-          value: parseFloat(s.value),
-        })).filter((s) => !isNaN(s.value) && s.value > 0),
-      }),
-    );
     startTransition(async () => {
-      await setMatchOdds(fd);
-      setSaved(true);
-      setExpanded(false);
+      try {
+        const fd = new FormData();
+        fd.append("matchId", match.id);
+        fd.append("homeOdds", home);
+        fd.append("drawOdds", draw);
+        fd.append("awayOdds", away);
+        fd.append("source", source);
+        fd.append("adminId", adminId);
+        await setMatchOdds(fd);
+        setSaved(true);
+      } catch (err: any) {
+        setError(err.message ?? "Error");
+      }
     });
   }
 
-  const outcomes: { key: OutcomeKey; label: string }[] = [
-    { key: "HOME", label: "1" },
-    { key: "DRAW", label: "x" },
-    { key: "AWAY", label: "2" },
-  ];
+  const inputStyle: React.CSSProperties = {
+    width: 64,
+    textAlign: "center",
+    fontFamily: "var(--f-mono)",
+    fontWeight: 600,
+    fontSize: 16,
+    color: "var(--green-deep)",
+    background: "var(--cream)",
+    border: "1px solid var(--coupon-rule-soft)",
+    borderRadius: "var(--r-input)",
+    padding: "6px 4px",
+    outline: "none",
+  };
 
   return (
-    <div
-      className={cn(
-        "rounded-xl border bg-white transition-all",
-        saved ? "border-green-200" : "border-slate-200",
-      )}
+    <form
+      onSubmit={handleSubmit}
+      style={{
+        padding: "12px 16px",
+        borderRadius: "var(--r-input)",
+        border: `1px solid ${saved ? "var(--green)" : "var(--hairline)"}`,
+        background: saved ? "rgba(0,98,65,0.04)" : "#fff",
+        transition: "border-color 0.15s",
+      }}
     >
-      {/* Summary row — always visible */}
-      <button
-        className="w-full flex items-center gap-3 p-3 text-left"
-        onClick={() => setExpanded(!expanded)}
+      {/* Match header */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 10,
+        }}
       >
-        <span className="text-xs text-slate-400 w-8">#{match.matchNumber}</span>
-        <span className="text-sm font-medium text-slate-700 flex-1">
-          {homeName} <span className="text-slate-400 font-normal">vs</span>{" "}
+        <span
+          style={{
+            fontFamily: "var(--f-serif)",
+            fontWeight: 600,
+            fontSize: 15,
+            color: "var(--ink)",
+          }}
+        >
+          <span
+            style={{
+              fontFamily: "var(--f-mono)",
+              fontWeight: 700,
+              fontSize: 11,
+              color: "var(--ink-faint)",
+              marginRight: 8,
+            }}
+          >
+            #{match.matchNumber}
+          </span>
+          {homeName}
+          <span
+            style={{
+              color: "var(--ink-faint)",
+              fontStyle: "italic",
+              margin: "0 8px",
+            }}
+          >
+            vs
+          </span>
           {awayName}
         </span>
-        {outcomes.map(({ key, label }) => {
-          const avg = calcAvg(key);
-          return (
-            <span key={key} className="text-xs text-slate-500">
-              <span className="text-slate-400">{label}:</span>{" "}
-              <span
-                className={cn(
-                  "font-mono",
-                  avg > 0 ? "text-slate-700" : "text-slate-300",
-                )}
-              >
-                {avg > 0 ? avg.toFixed(2) : "–"}
-              </span>
-            </span>
-          );
-        })}
-        {saved && <span className="text-green-500 text-xs">✓</span>}
-        <span className="text-slate-400 text-xs">{expanded ? "▲" : "▼"}</span>
-      </button>
+        {saved && (
+          <span
+            style={{
+              fontFamily: "var(--f-mono)",
+              fontSize: 9,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: "var(--green)",
+              border: "1px solid var(--green-pale)",
+              borderRadius: "var(--r-pill)",
+              padding: "2px 8px",
+            }}
+          >
+            ✓ {isSv ? "Odds satta" : "Odds set"}
+          </span>
+        )}
+      </div>
 
-      {/* Expanded odds entry */}
-      {expanded && (
-        <div className="border-t border-slate-100 p-4 space-y-4">
-          <div className="grid grid-cols-3 gap-4">
-            {outcomes.map(({ key, label }) => (
-              <div key={key} className="space-y-2">
-                <div className="text-sm font-semibold text-slate-600">
-                  {label} —{" "}
-                  {key === "HOME"
-                    ? homeName
-                    : key === "AWAY"
-                      ? awayName
-                      : locale === "sv"
-                        ? "Oavgjort"
-                        : "Draw"}
-                </div>
-                {sources[key].map((src, idx) => (
-                  <div key={idx} className="flex gap-1">
-                    <Input
-                      placeholder={locale === "sv" ? "Källa" : "Source"}
-                      value={src.name}
-                      onChange={(e) =>
-                        updateSource(key, idx, "name", e.target.value)
-                      }
-                      className="text-xs"
-                    />
-                    <Input
-                      placeholder="2.50"
-                      value={src.value}
-                      onChange={(e) =>
-                        updateSource(key, idx, "value", e.target.value)
-                      }
-                      className="w-20 text-xs font-mono"
-                      type="number"
-                      step="0.01"
-                      min="1.01"
-                    />
-                  </div>
-                ))}
-                <button
-                  onClick={() => addSource(key)}
-                  className="text-xs text-pitch-500 hover:text-pitch-700"
-                >
-                  + {locale === "sv" ? "Lägg till källa" : "Add source"}
-                </button>
-                <div className="text-xs text-slate-500">
-                  {locale === "sv" ? "Snitt" : "Avg"}:{" "}
-                  <span className="font-mono font-semibold text-slate-700">
-                    {calcAvg(key) > 0 ? calcAvg(key).toFixed(2) : "–"}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <Button size="sm" onClick={handleSave} loading={isPending}>
-            {locale === "sv" ? "Spara odds" : "Save odds"}
-          </Button>
+      {/* Odds inputs */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          flexWrap: "wrap",
+        }}
+      >
+        {/* 1 */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 4,
+          }}
+        >
+          <label
+            style={{
+              fontFamily: "var(--f-mono)",
+              fontSize: 9,
+              letterSpacing: "0.14em",
+              textTransform: "uppercase",
+              color: "var(--ink-faint)",
+            }}
+          >
+            1
+          </label>
+          <input
+            type="number"
+            step="0.01"
+            min="1.01"
+            max="99"
+            value={home}
+            onChange={(e) => {
+              setHome(e.target.value);
+              setSaved(false);
+            }}
+            placeholder="2.10"
+            required
+            style={inputStyle}
+          />
         </div>
-      )}
-    </div>
+
+        {/* X */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 4,
+          }}
+        >
+          <label
+            style={{
+              fontFamily: "var(--f-mono)",
+              fontSize: 9,
+              letterSpacing: "0.14em",
+              textTransform: "uppercase",
+              color: "var(--ink-faint)",
+            }}
+          >
+            X
+          </label>
+          <input
+            type="number"
+            step="0.01"
+            min="1.01"
+            max="99"
+            value={draw}
+            onChange={(e) => {
+              setDraw(e.target.value);
+              setSaved(false);
+            }}
+            placeholder="3.20"
+            required
+            style={inputStyle}
+          />
+        </div>
+
+        {/* 2 */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 4,
+          }}
+        >
+          <label
+            style={{
+              fontFamily: "var(--f-mono)",
+              fontSize: 9,
+              letterSpacing: "0.14em",
+              textTransform: "uppercase",
+              color: "var(--ink-faint)",
+            }}
+          >
+            2
+          </label>
+          <input
+            type="number"
+            step="0.01"
+            min="1.01"
+            max="99"
+            value={away}
+            onChange={(e) => {
+              setAway(e.target.value);
+              setSaved(false);
+            }}
+            placeholder="3.80"
+            required
+            style={inputStyle}
+          />
+        </div>
+
+        {/* Source */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          <label
+            style={{
+              fontFamily: "var(--f-mono)",
+              fontSize: 9,
+              letterSpacing: "0.14em",
+              textTransform: "uppercase",
+              color: "var(--ink-faint)",
+            }}
+          >
+            {isSv ? "Källa" : "Source"}
+          </label>
+          <input
+            type="text"
+            value={source}
+            onChange={(e) => setSource(e.target.value)}
+            placeholder="Unibet"
+            style={{
+              ...inputStyle,
+              width: 90,
+              textAlign: "left",
+              padding: "6px 10px",
+              fontFamily: "var(--f-sans)",
+              fontSize: 13,
+            }}
+          />
+        </div>
+
+        {/* Save button */}
+        <div style={{ marginTop: 18 }}>
+          <button
+            type="submit"
+            disabled={isPending}
+            style={{
+              fontFamily: "var(--f-sans)",
+              fontWeight: 600,
+              fontSize: 12,
+              padding: "7px 16px",
+              borderRadius: "var(--r-pill)",
+              border: "none",
+              cursor: isPending ? "default" : "pointer",
+              background: saved ? "var(--green-pale)" : "var(--green-cta)",
+              color: saved ? "var(--green-deep)" : "white",
+              transition: "all 0.15s",
+            }}
+          >
+            {isPending
+              ? "…"
+              : saved
+                ? isSv
+                  ? "✓ Sparat"
+                  : "✓ Saved"
+                : isSv
+                  ? "Spara"
+                  : "Save"}
+          </button>
+        </div>
+
+        {error && (
+          <span
+            style={{
+              fontFamily: "var(--f-mono)",
+              fontSize: 10,
+              color: "var(--stamp-red)",
+              marginTop: 18,
+            }}
+          >
+            {error}
+          </span>
+        )}
+      </div>
+    </form>
   );
 }
