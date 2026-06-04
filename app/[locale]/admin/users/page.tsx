@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { getLocale } from "next-intl/server";
 import { redirect } from "@/i18n/routing";
 import { InviteForm } from "@/components/admin/InviteForm";
+import { ResendInviteButton } from "@/components/admin/ResendInviteButton";
 import { formatDate } from "@/lib/utils";
 
 export default async function AdminUsersPage() {
@@ -13,6 +14,8 @@ export default async function AdminUsersPage() {
   if (!session?.user || session.user.role !== "ADMIN") {
     redirect({ href: "/", locale });
   }
+
+  const isSv = locale === "sv";
 
   const users = await prisma.user.findMany({
     orderBy: { createdAt: "desc" },
@@ -32,71 +35,232 @@ export default async function AdminUsersPage() {
     },
   });
 
+  const unverified = users.filter((u) => !u.emailVerified);
+  const verified = users.filter((u) => u.emailVerified);
+
   return (
-    <div className="space-y-8">
-      <h1 className="text-2xl font-bold text-slate-800">
-        {locale === "sv" ? "Admin — Användare" : "Admin — Users"}
-      </h1>
+    <div style={{ maxWidth: 900 }}>
+      {/* Page header */}
+      <div style={{ marginBottom: 32 }}>
+        <p className="eyebrow" style={{ marginBottom: 8 }}>
+          Admin · VM 2026
+        </p>
+        <h1
+          style={{
+            fontFamily: "var(--f-display)",
+            fontWeight: 600,
+            fontSize: 32,
+            letterSpacing: "-0.02em",
+            color: "var(--green-deep)",
+            margin: 0,
+          }}
+        >
+          {isSv ? "Användare" : "Users"}
+        </h1>
+      </div>
 
       {/* Invite form */}
-      <section className="space-y-3">
-        <h2 className="text-lg font-semibold text-slate-700">
-          {locale === "sv" ? "Bjud in ny spelare" : "Invite new player"}
-        </h2>
+      <section style={{ marginBottom: 40 }}>
+        <p className="eyebrow" style={{ marginBottom: 12 }}>
+          {isSv ? "Bjud in ny spelare" : "Invite new player"}
+        </p>
         <InviteForm locale={locale} />
       </section>
 
-      {/* User list */}
-      <section className="space-y-3">
-        <h2 className="text-lg font-semibold text-slate-700">
-          {locale === "sv" ? `Registrerade användare (${users.length})` : `Registered users (${users.length})`}
-        </h2>
-        <div className="rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
-          <table className="w-full text-sm">
+      {/* Unverified users — resend invite */}
+      {unverified.length > 0 && (
+        <section style={{ marginBottom: 40 }}>
+          <p className="eyebrow" style={{ marginBottom: 12 }}>
+            {isSv
+              ? `Ej verifierade (${unverified.length}) — skicka om inbjudan`
+              : `Unverified (${unverified.length}) — resend invite`}
+          </p>
+          <div
+            style={{
+              borderRadius: "var(--r-card)",
+              overflow: "hidden",
+              boxShadow: "var(--sh-card)",
+              border: "1px solid var(--hairline)",
+            }}
+          >
+            {unverified.map((user, idx) => (
+              <div
+                key={user.id}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "12px 20px",
+                  borderTop: idx > 0 ? "1px solid var(--hairline)" : "none",
+                  background: idx % 2 === 0 ? "#fff" : "var(--cream)",
+                  gap: 12,
+                }}
+              >
+                <div>
+                  <div
+                    style={{
+                      fontFamily: "var(--f-serif)",
+                      fontWeight: 600,
+                      fontSize: 15,
+                      color: "var(--ink)",
+                    }}
+                  >
+                    {user.name ?? "—"}
+                  </div>
+                  <div
+                    style={{
+                      fontFamily: "var(--f-mono)",
+                      fontSize: 11,
+                      color: "var(--ink-faint)",
+                      marginTop: 2,
+                    }}
+                  >
+                    {user.email}
+                  </div>
+                </div>
+                <ResendInviteButton email={user.email} locale={locale} />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Full user list */}
+      <section>
+        <p className="eyebrow" style={{ marginBottom: 12 }}>
+          {isSv
+            ? `Alla användare (${users.length})`
+            : `All users (${users.length})`}
+        </p>
+        <div
+          style={{
+            borderRadius: "var(--r-card)",
+            overflow: "hidden",
+            boxShadow: "var(--sh-card)",
+            border: "1px solid var(--hairline)",
+          }}
+        >
+          <table
+            style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}
+          >
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-100 text-left">
-                <th className="px-4 py-3 font-medium text-slate-500">
-                  {locale === "sv" ? "Namn / E-post" : "Name / Email"}
-                </th>
-                <th className="px-4 py-3 font-medium text-slate-500 hidden sm:table-cell">Roll</th>
-                <th className="px-4 py-3 font-medium text-slate-500 hidden md:table-cell">
-                  {locale === "sv" ? "Tips" : "Tips"}
-                </th>
-                <th className="px-4 py-3 font-medium text-slate-500 hidden md:table-cell">
-                  {locale === "sv" ? "Verifierad" : "Verified"}
-                </th>
-                <th className="px-4 py-3 font-medium text-slate-500 hidden lg:table-cell">
-                  {locale === "sv" ? "Registrerad" : "Registered"}
-                </th>
+              <tr style={{ background: "var(--green-deep)" }}>
+                {[
+                  isSv ? "Namn / E-post" : "Name / Email",
+                  "Roll",
+                  "Tips",
+                  isSv ? "Verifierad" : "Verified",
+                  isSv ? "Registrerad" : "Registered",
+                ].map((h) => (
+                  <th
+                    key={h}
+                    style={{
+                      padding: "10px 20px",
+                      textAlign: "left",
+                      fontFamily: "var(--f-mono)",
+                      fontSize: 10,
+                      letterSpacing: "0.14em",
+                      textTransform: "uppercase",
+                      color: "var(--gold)",
+                      fontWeight: 500,
+                    }}
+                  >
+                    {h}
+                  </th>
+                ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
-              {users.map((user) => (
-                <tr key={user.id} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="px-4 py-3">
-                    <div className="font-medium text-slate-800">{user.name ?? "—"}</div>
-                    <div className="text-xs text-slate-400">{user.email}</div>
+            <tbody>
+              {users.map((user, idx) => (
+                <tr
+                  key={user.id}
+                  style={{
+                    borderTop: "1px solid var(--hairline)",
+                    background: idx % 2 === 0 ? "#fff" : "var(--cream)",
+                  }}
+                >
+                  {/* Name + email */}
+                  <td style={{ padding: "12px 20px" }}>
+                    <div
+                      style={{
+                        fontFamily: "var(--f-serif)",
+                        fontWeight: 600,
+                        fontSize: 14,
+                        color: "var(--ink)",
+                      }}
+                    >
+                      {user.name ?? "—"}
+                    </div>
+                    <div
+                      style={{
+                        fontFamily: "var(--f-mono)",
+                        fontSize: 11,
+                        color: "var(--ink-faint)",
+                        marginTop: 2,
+                      }}
+                    >
+                      {user.email}
+                    </div>
                   </td>
-                  <td className="px-4 py-3 hidden sm:table-cell">
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                      user.role === "ADMIN"
-                        ? "bg-purple-100 text-purple-700"
-                        : "bg-slate-100 text-slate-600"
-                    }`}>
+
+                  {/* Role */}
+                  <td style={{ padding: "12px 20px" }}>
+                    <span
+                      style={{
+                        fontFamily: "var(--f-mono)",
+                        fontSize: 9.5,
+                        letterSpacing: "0.12em",
+                        textTransform: "uppercase",
+                        padding: "2px 8px",
+                        borderRadius: "var(--r-pill)",
+                        background:
+                          user.role === "ADMIN"
+                            ? "rgba(203,162,88,0.15)"
+                            : "var(--green-pale)",
+                        color:
+                          user.role === "ADMIN"
+                            ? "var(--gold)"
+                            : "var(--green-deep)",
+                      }}
+                    >
                       {user.role}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-slate-600 hidden md:table-cell">
+
+                  {/* Tips count */}
+                  <td
+                    style={{
+                      padding: "12px 20px",
+                      fontFamily: "var(--f-mono)",
+                      fontSize: 13,
+                      color: "var(--ink-soft)",
+                    }}
+                  >
                     {user._count.matchTips + user._count.groupAdvancementTips}
                   </td>
-                  <td className="px-4 py-3 hidden md:table-cell">
+
+                  {/* Verified */}
+                  <td style={{ padding: "12px 20px" }}>
                     {user.emailVerified ? (
-                      <span className="text-green-600 text-xs">✓</span>
+                      <span style={{ color: "var(--green)", fontSize: 14 }}>
+                        ✓
+                      </span>
                     ) : (
-                      <span className="text-slate-300 text-xs">—</span>
+                      <span style={{ color: "var(--ink-faint)", fontSize: 11 }}>
+                        —
+                      </span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-xs text-slate-400 hidden lg:table-cell">
+
+                  {/* Registered */}
+                  <td
+                    style={{
+                      padding: "12px 20px",
+                      fontFamily: "var(--f-mono)",
+                      fontSize: 11,
+                      color: "var(--ink-faint)",
+                    }}
+                  >
                     {formatDate(user.createdAt, locale)}
                   </td>
                 </tr>

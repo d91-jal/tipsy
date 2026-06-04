@@ -315,7 +315,7 @@ async function importTournamentOdds(file: string) {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 async function main() {
-  console.log("\n📥 Tipsy — Odds importer");
+  console.log("\n📥 Tipsify — Odds importer");
   if (DRY_RUN) console.log("   DRY RUN — no database writes");
   if (FORCE) console.log("   FORCE — existing odds will be overwritten");
 

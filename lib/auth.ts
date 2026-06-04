@@ -32,14 +32,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         },
         secure: process.env.EMAIL_SERVER_SECURE === "true",
       },
-      from: process.env.EMAIL_FROM ?? "noreply@tipsy.app",
+      from: process.env.EMAIL_FROM ?? "noreply@tipsify.se",
       sendVerificationRequest: async ({ identifier: email, url, provider }) => {
         const { createTransport } = await import("nodemailer");
         const transport = createTransport(provider.server as any);
         await transport.sendMail({
           to: email,
           from: provider.from,
-          subject: "Din inloggningslänk till Tipsy",
+          subject: "Din inloggningslänk till Tipsify",
           html: magicLinkEmail(url),
           text: `Klicka på länken för att logga in: ${url}`,
         });
@@ -101,7 +101,7 @@ function magicLinkEmail(url: string): string {
 <!DOCTYPE html>
 <html>
 <body style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 24px;">
-  <h1 style="color: #1e293b; font-size: 24px; margin-bottom: 8px;">Tipsy ⚽</h1>
+  <h1 style="color: #1e293b; font-size: 24px; margin-bottom: 8px;">Tipsify ⚽</h1>
   <p style="color: #475569; margin-bottom: 24px;">
     Klicka på knappen nedan för att logga in. Länken är giltig i 24 timmar.
   </p>

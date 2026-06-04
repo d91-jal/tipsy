@@ -75,7 +75,9 @@ export default async function KnockoutPage() {
           >
             {isSv ? "Slutspelet." : "Knockout."}{" "}
             <span style={{ fontStyle: "italic", color: "var(--green)" }}>
-              {isSv ? "24h per match." : "24h per match."}
+              {isSv
+                ? "Tippas 24h innan matchstart."
+                : "Closes 24h before game starts."}
             </span>
           </h1>
         </div>
