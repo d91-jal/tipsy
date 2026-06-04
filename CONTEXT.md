@@ -1,170 +1,116 @@
 # Tipsy — Sessionsstatus
-_Senast uppdaterad: 2026-05-16 (Session 8)_
+
+_Senast uppdaterad: 2026-05-27 (Session 9)_
 
 ## Nuvarande fas
-Appen körs lokalt. Designsystem applicerat (Fas 1–3). Grundläggande flöden fungerar.
-Fokus: buggfixar, polish och förberedelse för produktion.
+
+Appen är live i produktion på Vercel. Testare inbjudna. Väntar på feedback.
+
+## Infrastruktur ✅
+
+- **Hosting:** Vercel (automatisk deploy vid push till main)
+- **Databas:** AWS RDS PostgreSQL (eu-north-1, tipsy-prod)
+- **E-post:** AWS SES (sandbox-läge, production access begärd)
+- **Domän:** Custom domän kopplad, SSL via Vercel
+- **Auth:** NextAuth v5, JWT-strategi, magic link + lösenord
 
 ## Vad som fungerar ✅
-- Lokal utvecklingsmiljö: Docker (Postgres + Mailpit), npm run dev
-- Inloggning: Magic link via Mailpit + lösenord (credentials)
-- Gruppspelstips: kupongestetik med 1X2-celler och bläckcirklar
-- Avancemangstips: välj 2 lag per grupp
-- Slutspelstips: öppnas löpande per match
-- Turneringstips: finallag + vinnare
-- Admin: mata in resultat (inkl. korrigering), hantera odds, bjuda in
-- Competitions: skapa, gå med, topplista per tävling
-- Simulering: skapa bottar, stega dagar, auto-grupptabell
-- Tipskuponger: översikt alla deltagares tips per tävling
-- Spelardetaljsida: /competitions/[slug]/player/[userId]
-- Grupptabeller: visas under tävlingsställningen
-- CSV-import/export av lag och matcher
-- Flaggnedladdning: 48 lag med korrekt FIFA→ISO-mappning
-- Designsystem: Tipsy-branding med kupongestetik genomgående
-- Styrkebaserad odds-seeding + 5 testanvändare med viktade tips
-- Tvåspråkigt: svenska + engelska (next-intl)
 
-## Designsystem — Tipsy
-Källa: Tipsy_Design_System.zip (Claude Design)
-Tema: retro stryktipskupong × varm modern palett
-- Bakgrund: cream (#f2f0eb), coupon-bg (#f4ecd8)
-- Primär: green-deep (#1E3932), green-cta (#00754a)
-- Accent: gold (#cba258), stamp-red (#9c2a1f)
-- Typsnitt: Newsreader (display/serif), Inter (body), JetBrains Mono (metadata), Caveat (handskrivet)
-- Komponenter: .coupon (perforerade kanter, kulspetspenna-cirklar), .stamp, .eyebrow, .pill
-- Tokens i CSS-variabler (globals.css), mappade till Tailwind (tailwind.config.ts)
+- Inloggning: magic link + lösenord
+- Alla tipskategorier: gruppspel, avancemang, slutspel, finallag/vinnare
+- Taktiktips: vinnare kan väljas oberoende av finallag
+- Topplista med poängberäkning
+- Grupptabeller under Resultat-fliken
+- Kupongöversikt (allas tips i matris)
+- Spelardetaljsida med fullständig kupong + poäng
+- Admin: resultat (inkl. korrigering), odds, tävlingar, simulering
+- Skicka om inbjudan till ej verifierade användare
+- CSV-import: lag, matcher, odds
+- Excel-export: topplista + allas tips
+- Designsystem genomgående (Tipsy-branding, kupong-estetik)
+- Mobilanpassning av kupongen
+- Toast-bekräftelse vid sparade tips
+- Felhantering vid nätverksfel
+- Tillbaka-navigation på djupsidor
 
-## Arkitektur
-Stack:        Next.js 14.2.5 · TypeScript · Prisma · PostgreSQL · NextAuth v5 (JWT)
-Hosting:      AWS Amplify + RDS + SES (ej uppsatt än)
-i18n:         next-intl (sv/en)
-Auth:         lib/auth.config.ts (edge/middleware) + lib/auth.ts (server, JWT-strategi)
-Styling:      Tailwind + designsystem-tokens i CSS-variabler
-UI:           components/ui/index.tsx (Button, Card, Badge, Input, Label, Toaster)
+## Navigationsstruktur
 
-Datamodell:
-  Tournament → Competition → CompetitionMember ↔ User
-  Match → MatchOdds (Float), MatchTip
-  Group → Team, GroupAdvancementTip, GroupActualAdvancement
-  TournamentTip, TournamentActualResult, AdvancementOdds, TournamentOdds
+```
+Login → /competitions
+/competitions                     ← lista turneringar
+/competitions/[slug]              ← Ledartavla (CompetitionNav)
+/competitions/[slug]/coupons      ← Allas tips
+/competitions/[slug]/results      ← Resultat (matchlista + tabeller)
+/competitions/[slug]/player/[id]  ← Spelardetaljsida
+/tips/group-stage                 ← Mina tips (TipsNav med flikar)
+/tips/advancement
+/tips/knockout
+/tips/tournament
+/admin/*                          ← Separat, bara admin
+```
 
-Tips-låsning:
-  Gruppspel/avancemang/finallag = oddsLockDate (2 dagar före turnering)
-  Slutspelsmatcher = tipDeadline per match (24h innan)
+## Miljövariabler (Vercel)
 
-Synlighet:
-  CompetitionMember.tipsPublic — styr om tips syns före deadline
-
-Simulering:
-  Competition.simulationMode — SimBots, dag-stegning, auto-grupptabell
-
-## Kända problem / teknisk skuld
-- Next.js 14.2.5 har säkerhetshål (CVE) — uppgradering till 15/16 krävs
-  men innebär async params i alla page-komponenter + React 19-migration
-- React 18 saknar useActionState och useOptimistic — vi använder
-  useFormState (react-dom) och useState som ersättning
-- Datum i Prisma (Date) kan inte passeras direkt till Client Components —
-  konverteras till string i page-komponenter (toISOString)
-- Decimal ersattes med Float i schema — serialize() borttagen
-- Lagdata i prisma/data/wc2026.ts är korrigerad mot officiella FIFA-dragningen
-- Matchdatum i UTC — användare ser UTC-tider (tidszonkonvertering ej implementerad)
-- Knockout bracket-seeding i simulering ej implementerad
+- DATABASE_URL — RDS connection string
+- AUTH_SECRET + NEXTAUTH_SECRET — samma värde
+- NEXTAUTH_URL — custom domän
+- AUTH_TRUST_HOST — true
+- EMAIL*SERVER*\* — SES SMTP-credentials
+- EMAIL_FROM — verifierad SES-avsändare
 
 ## Lokalmiljö
-docker compose up -d        # starta postgres + mailpit
-npm run dev                 # starta Next.js
-http://localhost:3000       # appen
-http://localhost:8025       # mailpit (magic links)
-docker compose down         # stäng ner (behåller data)
-docker compose down -v      # stäng ner + radera data
 
-## Admin-inloggning (seed)
-Email:    värdet av ADMIN_EMAIL i .env.local
-Lösenord: värdet av ADMIN_PASSWORD i .env.local
-
-## Testanvändare (sim:seed)
-Lösenord för alla: Test1234
-- alice@test.tipsy  (skill 0.75 — sharp)
-- bob@test.tipsy    (skill 0.50 — good)
-- carla@test.tipsy  (skill 0.25 — random)
-- david@test.tipsy  (skill 0.60 — good)
-- eva@test.tipsy    (skill 0.40 — average)
+```bash
+docker compose up -d        # postgres + mailpit
+npm run dev                 # localhost:3000
+http://localhost:8025       # mailpit
+docker compose down
+```
 
 ## Scripts
-npm run dev              # Starta Next.js dev server
-npm run db:migrate       # Ny migration (dev)
-npm run db:seed          # Seeda turnering, lag, matcher, default-tävling
-npm run db:studio        # Prisma Studio (http://localhost:5555)
-npm run sim:seed         # Generera odds + 5 testanvändare + tips
-npm run sim:seed:reset   # Rensa sim-data och generera om
-npm run flags:download   # Ladda ner flaggor (skippar befintliga)
-npm run flags:download:force  # Ladda om alla flaggor
-npm run tournament:import     # Importera lag/matcher från CSV
-npm run tournament:export     # Exportera till CSV
 
-## Filstruktur (viktiga filer)
-app/
-  globals.css                              ← designsystem-tokens + coupon CSS
-  [locale]/
-    page.tsx                               ← startsida (Fas 3 redesign)
-    auth/login/page.tsx                    ← inloggning (kupong-stil)
-    tips/
-      layout.tsx + TipsNav                 ← sub-navigation
-      group-stage/page.tsx                 ← gruppspelskupong (Fas 3)
-      advancement/page.tsx                 ← avancemangstips
-      knockout/page.tsx                    ← slutspelstips
-      tournament/page.tsx                  ← finallag + vinnare
-    competitions/
-      page.tsx                             ← lista tävlingar
-      [slug]/
-        page.tsx                           ← topplista + grupptabeller (Fas 3)
-        coupons/page.tsx                   ← alla kuponger
-        player/[userId]/page.tsx           ← spelarens kupong (Fas 3)
-    admin/
-      results/page.tsx                     ← mata in/korrigera resultat
-      odds/page.tsx                        ← hantera odds
-      competitions/page.tsx                ← skapa tävlingar
-      simulate/page.tsx                    ← simulering
-      users/page.tsx                       ← användare + inbjudningar
-components/
-  ui/index.tsx                             ← Button, Card, Badge, Input, Toaster
-  layout/Navbar.tsx                        ← navigation (Fas 2 redesign)
-  tips/
-    CouponMatchRow.tsx                     ← kupong-matchrad med bläckcirklar
-    AdvancementCard.tsx                    ← avancemangstips (Fas 3)
-    TipsNav.tsx, TournamentTipForm.tsx
-  competitions/
-    GroupTable.tsx                          ← grupptabeller (V/O/F/GM-IM/MS/P)
-    PlayerCoupon.tsx                        ← spelarens resultat (Fas 3)
-    CouponsView.tsx                        ← alla kuponger-matris
-    VisibilityToggle.tsx, JoinCompetitionForm.tsx
-  admin/
-    AdminResultForm.tsx                    ← redigerbara resultat
-    AdminNav, OddsForm, SimulationPanel, etc.
-lib/
-  auth.ts + auth.config.ts                ← NextAuth v5 (JWT, edge-split)
-  db.ts                                   ← Prisma singleton
-  utils.ts                                ← formatDate, outcomeLabel, etc.
-  group-standings.ts                       ← grupptabellberäkning server-side
-  scoring/index.ts                         ← poängberäkning + leaderboard
-  actions/tips.ts                          ← server actions för tipsinmatning
-  actions/admin.ts                         ← server actions för admin
-  actions/competitions.ts                  ← skapa/gå med i tävlingar
-  actions/simulate.ts                      ← simuleringsmotor
-prisma/
-  schema.prisma                            ← komplett datamodell (Float, ej Decimal)
-  seed.ts                                  ← seeda turnering från wc2026.ts
-  data/wc2026.ts                           ← korrekta VM 2026-grupper + 104 matcher
-scripts/
-  download-flags.ts                        ← flaggor för 48 VM-lag
-  seed-simulation.ts                       ← odds + testanvändare + tips
-  import-tournament.ts                     ← CSV import/export
+```bash
+npm run db:seed              # turnering, lag, matcher, admin, default-tävling
+npm run db:studio            # Prisma Studio
+npm run sim:seed             # odds + 5 testanvändare + tips
+npm run sim:seed:reset       # rensa och generera om
+npm run flags:download       # flaggor för 48 VM-lag
+npm run tournament:import    # CSV-import lag + matcher
+npm run tournament:export    # CSV-export
+npm run odds:import          # importera odds från CSV (data/odds-*.csv)
+npm run odds:import:dry      # validera utan att skriva
+npm run odds:import:force    # skriv över befintliga odds
+```
 
-## Kvarvarande features
-- E-postpåminnelser 48h innan tips stängs
-- Tidszonkonvertering i UI (visa lokal tid)
-- Next.js 15/16-uppgradering (async params, React 19)
-- AWS-deploy (RDS, SES, Amplify)
-- Knockout auto-bracket i simulering
-- Statistiksida (populäraste tipsen etc.)
-- PWA-manifest för mobil
+## Odds-import CSV-format
+
+```
+data/odds-matches.csv:      match_number,home_odds,draw_odds,away_odds,source
+data/odds-advancement.csv:  fifa_code,odds,source
+data/odds-tournament.csv:   fifa_code,reach_final_odds,win_odds,source
+```
+
+## Kända begränsningar / teknisk skuld
+
+- SES i sandbox-läge — production access begärd, inväntar godkännande
+- Next.js 14 (CVE) — uppgradering till 15/16 planerad efter VM
+- React 18: useFormState (react-dom) istället för useActionState
+- React 18: useState istället för useOptimistic
+- Datum från Prisma konverteras till .toISOString() i page-komponenter
+- Slutspelsbracket-seeding i simulering ej implementerad
+- Ingen profilsida för lösenordsbyte (magic link används istället)
+
+## Kvarvarande features (efter feedback)
+
+- Exhibition-spelare (AI/medier/folkets tips)
+- Statistiksida
+- Next.js 15/16-uppgradering
+- Tidszonkonvertering i UI
+- Admin-sidor: simulering, tävlingar (lägre prioritet)
+
+## VM 2026
+
+- Turneringsstart: 11 juni 2026
+- Tipslåsning gruppspel/avancemang/final: 9 juni 2026 (oddsLockDate)
+- 48 lag, 12 grupper (A-L), 104 matcher (72 grupp + 32 slutspel)
+- Alla tider UTC
