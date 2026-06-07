@@ -391,7 +391,7 @@ export function PlayerCoupon({
                 tip?.prediction === "HOME"
                   ? "1"
                   : tip?.prediction === "DRAW"
-                    ? "X"
+                    ? "x"
                     : "2";
               return (
                 <div
@@ -445,7 +445,7 @@ export function PlayerCoupon({
                       : actual === "HOME"
                         ? "1"
                         : actual === "DRAW"
-                          ? "X"
+                          ? "x"
                           : "2"}
                   </div>
                 </div>

@@ -70,7 +70,7 @@ type Props = {
 type Tab = "groups" | "advancement" | "tournament";
 
 function outcomeLabel(o: "HOME" | "DRAW" | "AWAY") {
-  return o === "HOME" ? "1" : o === "DRAW" ? "X" : "2";
+  return o === "HOME" ? "1" : o === "DRAW" ? "x" : "2";
 }
 function actualOutcome(m: Match): "HOME" | "DRAW" | "AWAY" | null {
   if (m.homeScore === null || m.awayScore === null) return null;

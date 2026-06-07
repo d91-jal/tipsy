@@ -34,6 +34,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
       from: process.env.EMAIL_FROM ?? "noreply@tipsify.se",
       sendVerificationRequest: async ({ identifier: email, url, provider }) => {
+        // Check user.
+        const user = await prisma.user.findUnique({
+          where: { email },
+          select: { id: true },
+        });
+
+        if (!user) {
+          // Logga men skicka inget mail — avslöja inte att adressen inte finns
+          console.info(`[auth] Magic link request for unknown email: ${email}`);
+          return;
+        }
         const { createTransport } = await import("nodemailer");
         const transport = createTransport(provider.server as any);
         await transport.sendMail({

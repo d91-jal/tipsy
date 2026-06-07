@@ -413,7 +413,7 @@ function buildTipsSheet(
         actualOutcome === "HOME"
           ? "1"
           : actualOutcome === "DRAW"
-            ? "X"
+            ? "x"
             : actualOutcome === "AWAY"
               ? "2"
               : "";
