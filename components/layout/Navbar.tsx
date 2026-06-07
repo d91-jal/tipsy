@@ -83,7 +83,7 @@ export function Navbar({ session, locale }: NavbarProps) {
               color: "var(--green-deep)",
             }}
           >
-            Tipsy
+            Tipsify
           </span>
           <span
             style={{
