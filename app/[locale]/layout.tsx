@@ -14,11 +14,15 @@ export async function generateMetadata({
   params: { locale: string };
 }): Promise<Metadata> {
   return {
-    title: "Tipsy",
+    title: "Tipsify",
     description:
       locale === "sv"
-        ? "Tippa FIFA VM 2026 med dina vänner"
+        ? "Tippa FIFA VM 2026"
         : "Predict FIFA World Cup 2026 with your friends",
+    icons: {
+      icon: "/brand-mark.svg",
+      apple: "/brand-mark.svg",
+    },
   };
 }
 
