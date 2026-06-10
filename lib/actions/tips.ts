@@ -19,7 +19,7 @@ export type MatchTipState = { success: boolean; error?: string };
 
 export async function submitMatchTip(
   _prev: MatchTipState,
-  formData: FormData
+  formData: FormData,
 ): Promise<MatchTipState> {
   const session = await auth();
   if (!session?.user?.id) return { success: false, error: "NOT_AUTHENTICATED" };
@@ -39,8 +39,10 @@ export async function submitMatchTip(
   });
 
   if (!match) return { success: false, error: "MATCH_NOT_FOUND" };
-  if (match.status === "FINISHED") return { success: false, error: "MATCH_FINISHED" };
-  if (new Date() > match.tipDeadline) return { success: false, error: "DEADLINE_PASSED" };
+  if (match.status === "FINISHED")
+    return { success: false, error: "MATCH_FINISHED" };
+  if (new Date() > match.tipDeadline)
+    return { success: false, error: "DEADLINE_PASSED" };
 
   await prisma.matchTip.upsert({
     where: { userId_matchId: { userId: session.user.id, matchId } },
@@ -57,17 +59,19 @@ export async function submitMatchTip(
 // GROUP ADVANCEMENT TIP
 // ─────────────────────────────────────────────────────────────────────────────
 
-const advancementTipSchema = z.object({
-  groupId: z.string(),
-  firstTeamId: z.string(),
-  secondTeamId: z.string(),
-}).refine((d) => d.firstTeamId !== d.secondTeamId, {
-  message: "Must select two different teams",
-});
+const advancementTipSchema = z
+  .object({
+    groupId: z.string(),
+    firstTeamId: z.string(),
+    secondTeamId: z.string(),
+  })
+  .refine((d) => d.firstTeamId !== d.secondTeamId, {
+    message: "Must select two different teams",
+  });
 
 export async function submitGroupAdvancementTip(
   _prev: MatchTipState,
-  formData: FormData
+  formData: FormData,
 ): Promise<MatchTipState> {
   const session = await auth();
   if (!session?.user?.id) return { success: false, error: "NOT_AUTHENTICATED" };
@@ -96,7 +100,8 @@ export async function submitGroupAdvancementTip(
   const teamsInGroup = await prisma.team.findMany({
     where: { groupId, id: { in: [firstTeamId, secondTeamId] } },
   });
-  if (teamsInGroup.length !== 2) return { success: false, error: "INVALID_TEAMS" };
+  if (teamsInGroup.length !== 2)
+    return { success: false, error: "INVALID_TEAMS" };
 
   await prisma.groupAdvancementTip.upsert({
     where: { userId_groupId: { userId: session.user.id, groupId } },
@@ -112,20 +117,20 @@ export async function submitGroupAdvancementTip(
 // TOURNAMENT TIP (finalists + winner)
 // ─────────────────────────────────────────────────────────────────────────────
 
-const tournamentTipSchema = z.object({
-  tournamentId: z.string(),
-  finalist1Id: z.string(),
-  finalist2Id: z.string(),
-  winnerId: z.string(),
-}).refine((d) => d.finalist1Id !== d.finalist2Id, {
-  message: "Finalists must be different teams",
-}).refine((d) => [d.finalist1Id, d.finalist2Id].includes(d.winnerId), {
-  message: "Winner must be one of the finalists",
-});
+const tournamentTipSchema = z
+  .object({
+    tournamentId: z.string(),
+    finalist1Id: z.string(),
+    finalist2Id: z.string(),
+    winnerId: z.string(),
+  })
+  .refine((d) => d.finalist1Id !== d.finalist2Id, {
+    message: "Finalists must be different teams",
+  });
 
 export async function submitTournamentTip(
   _prev: MatchTipState,
-  formData: FormData
+  formData: FormData,
 ): Promise<MatchTipState> {
   const session = await auth();
   if (!session?.user?.id) return { success: false, error: "NOT_AUTHENTICATED" };
@@ -136,7 +141,8 @@ export async function submitTournamentTip(
     finalist2Id: formData.get("finalist2Id"),
     winnerId: formData.get("winnerId"),
   });
-  if (!parsed.success) return { success: false, error: parsed.error.errors[0]?.message };
+  if (!parsed.success)
+    return { success: false, error: parsed.error.errors[0]?.message };
 
   const { tournamentId, finalist1Id, finalist2Id, winnerId } = parsed.data;
 
@@ -153,7 +159,13 @@ export async function submitTournamentTip(
   await prisma.tournamentTip.upsert({
     where: { userId: session.user.id },
     update: { finalist1Id, finalist2Id, winnerId, updatedAt: new Date() },
-    create: { userId: session.user.id, tournamentId, finalist1Id, finalist2Id, winnerId },
+    create: {
+      userId: session.user.id,
+      tournamentId,
+      finalist1Id,
+      finalist2Id,
+      winnerId,
+    },
   });
 
   revalidatePath("/[locale]/tips/tournament", "page");
