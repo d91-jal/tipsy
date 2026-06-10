@@ -153,7 +153,7 @@ export default function LoginPage() {
             margin: "0 0 6px",
           }}
         >
-          Tipsy
+          Tipsify
         </h1>
         <p className="eyebrow">
           {isSv ? "VM 2026 · Logga in" : "WC 2026 · Sign in"}
@@ -367,7 +367,7 @@ export default function LoginPage() {
             opacity: 0.8,
           }}
         >
-          VM-tipset · 2026 · Tipsy
+          VM-tipset · 2026 · Tipsify
         </div>
       </div>
     </div>

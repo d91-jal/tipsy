@@ -42,7 +42,7 @@ export default async function AuthErrorPage({
               {isSv ? "Inloggningsfel" : "Sign-in error"}
             </h2>
             <div className="sub" style={{ color: "rgba(255,255,255,0.6)" }}>
-              Tipsy · VM 2026
+              Tipsify · VM 2026
             </div>
           </div>
           <div
@@ -107,7 +107,7 @@ export default async function AuthErrorPage({
             opacity: 0.8,
           }}
         >
-          VM-tipset · 2026 · Tipsy
+          VM-tipset · 2026 · Tipsify
         </div>
       </div>
     </div>

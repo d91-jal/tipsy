@@ -144,7 +144,7 @@ async function downloadFlag(
 // Main
 // ─────────────────────────────────────────────────────────────────────────────
 async function main() {
-  console.log(`\n🏳️  Tipsy — Flag downloader`);
+  console.log(`\n🏳️  Tipsify — Flag downloader`);
   console.log(
     `   Format : ${FORMAT.toUpperCase()}${FORMAT === "png" ? ` (${PNG_WIDTH}px)` : ""}`,
   );

@@ -88,7 +88,7 @@ export default async function VerifyPage({
             opacity: 0.8,
           }}
         >
-          VM-tipset · 2026 · Tipsy
+          VM-tipset · 2026 · Tipsify
         </div>
       </div>
     </div>

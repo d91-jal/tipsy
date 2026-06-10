@@ -350,7 +350,7 @@ export async function exportTournamentCsv(tournamentSlug: string): Promise<{
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function main() {
-  console.log("\n📥 Tipsy — Tournament CSV importer");
+  console.log("\n📥 Tipsify — Tournament CSV importer");
 
   // Export mode
   if (process.argv.includes("--export")) {

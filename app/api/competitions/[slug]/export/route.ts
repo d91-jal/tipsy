@@ -130,7 +130,7 @@ export async function GET(
 
   // ── Build workbook ──────────────────────────────────────────────────────────
   const wb = new ExcelJS.Workbook();
-  wb.creator = "Tipsy";
+  wb.creator = "Tipsify";
   wb.created = new Date();
 
   buildLeaderboardSheet(wb, leaderboard, competition.name, isSv);
@@ -179,7 +179,7 @@ function buildLeaderboardSheet(
   // ── Subtitle row ─────────────────────────────────────────────────────────
   ws.mergeCells("A2:F2");
   const subtitleCell = ws.getCell("A2");
-  subtitleCell.value = `Tipsy · VM 2026 · ${new Date().toLocaleDateString(isSv ? "sv-SE" : "en-GB")}`;
+  subtitleCell.value = `Tipsify · VM 2026 · ${new Date().toLocaleDateString(isSv ? "sv-SE" : "en-GB")}`;
   subtitleCell.font = {
     ...monoFont,
     color: { argb: "FF" + C.inkFaint },
@@ -313,7 +313,7 @@ function buildTipsSheet(
 
   ws.mergeCells(2, 1, 2, Math.max(totalCols, 5));
   ws.getCell("A2").value =
-    `Tipsy · VM 2026 · ${new Date().toLocaleDateString(isSv ? "sv-SE" : "en-GB")}`;
+    `Tipsify · VM 2026 · ${new Date().toLocaleDateString(isSv ? "sv-SE" : "en-GB")}`;
   ws.getCell("A2").font = {
     ...monoFont,
     color: { argb: "FF" + C.inkFaint },

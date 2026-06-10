@@ -1,4 +1,4 @@
-# Tipsy — Sessionsstatus
+# Tipsify — Sessionsstatus
 
 _Senast uppdaterad: 2026-05-27 (Session 9)_
 
@@ -27,7 +27,7 @@ Appen är live i produktion på Vercel. Testare inbjudna. Väntar på feedback.
 - Skicka om inbjudan till ej verifierade användare
 - CSV-import: lag, matcher, odds
 - Excel-export: topplista + allas tips
-- Designsystem genomgående (Tipsy-branding, kupong-estetik)
+- Designsystem genomgående (Tipsify-branding, kupong-estetik)
 - Mobilanpassning av kupongen
 - Toast-bekräftelse vid sparade tips
 - Felhantering vid nätverksfel

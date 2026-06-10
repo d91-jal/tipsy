@@ -1,4 +1,4 @@
-# Tipsy ⚽
+# Tipsify ⚽
 
 Webapplikation för att tippa FIFA VM 2026 med vänner. Poäng baseras på
 genomsnittliga odds från kommersiella bettingsajter. Retro stryktipskupong-estetik.
@@ -18,29 +18,30 @@ genomsnittliga odds från kommersiella bettingsajter. Retro stryktipskupong-este
 - 🃏 Kupongöversikt — alla deltagares tips i en vy
 - 🤖 Simuleringsläge: generera bottar, stega dagar, auto-grupptabell
 - 🌐 Svenska och engelska (next-intl)
-- 🎨 Designsystem: Tipsy-branding, kupong-estetik, Newsreader serif
+- 🎨 Designsystem: Tipsify-branding, kupong-estetik, Newsreader serif
 
 ---
 
 ## Tech Stack
 
-| Del              | Teknik                                    |
-|------------------|-------------------------------------------|
-| Frontend/API     | Next.js 14 (App Router, TypeScript)       |
-| Databas          | PostgreSQL (AWS RDS / lokal Docker)       |
-| ORM              | Prisma (Float, ej Decimal)                |
-| Auth             | NextAuth.js v5 (JWT + magic link via SES) |
-| E-post           | AWS SES / Mailpit (lokalt)                |
-| Hosting          | AWS Amplify (ej driftsatt än)             |
-| Styling          | Tailwind CSS + designsystem-tokens        |
-| i18n             | next-intl (sv/en)                         |
-| Typsnitt         | Newsreader, Inter, JetBrains Mono, Caveat |
+| Del          | Teknik                                    |
+| ------------ | ----------------------------------------- |
+| Frontend/API | Next.js 14 (App Router, TypeScript)       |
+| Databas      | PostgreSQL (AWS RDS / lokal Docker)       |
+| ORM          | Prisma (Float, ej Decimal)                |
+| Auth         | NextAuth.js v5 (JWT + magic link via SES) |
+| E-post       | AWS SES / Mailpit (lokalt)                |
+| Hosting      | AWS Amplify (ej driftsatt än)             |
+| Styling      | Tailwind CSS + designsystem-tokens        |
+| i18n         | next-intl (sv/en)                         |
+| Typsnitt     | Newsreader, Inter, JetBrains Mono, Caveat |
 
 ---
 
 ## Kom igång
 
 ### Krav
+
 - Node.js 20+
 - Docker Desktop (PostgreSQL + Mailpit)
 - Git
@@ -104,7 +105,7 @@ EMAIL_SERVER_PORT="1025"
 EMAIL_SERVER_SECURE="false"
 EMAIL_SERVER_USER=""
 EMAIL_SERVER_PASSWORD=""
-EMAIL_FROM="Tipsy <noreply@localhost>"
+EMAIL_FROM="Tipsify <noreply@localhost>"
 
 # Admin-konto (används av db:seed)
 ADMIN_EMAIL="admin@test.se"
@@ -163,12 +164,14 @@ npx tsx scripts/import-tournament.ts \
 ```
 
 CSV-format — `teams.csv`:
+
 ```
 group,fifa_code,name_sv,name_en
 A,MEX,Mexiko,Mexico
 ```
 
 CSV-format — `matches.csv`:
+
 ```
 match_number,stage,group,home_team,away_team,scheduled_at,venue
 1,GROUP,A,MEX,RSA,2026-06-11T19:00:00Z,Estadio Azteca
@@ -191,12 +194,12 @@ Alla tider i UTC.
 
 ## Poängregler
 
-| Tips             | Poäng vid rätt                              | Poäng vid fel |
-|------------------|---------------------------------------------|---------------|
-| Match 1X2        | Genomsnittliga odds för utfallet (t.ex. 3.20) | 0           |
-| Lag avancerar    | Genomsnittliga avancemangodds för laget      | 0            |
-| Finallag         | Genomsnittliga odds för att nå finalen       | 0            |
-| VM-vinnare       | Genomsnittliga odds för att vinna            | 0            |
+| Tips          | Poäng vid rätt                                | Poäng vid fel |
+| ------------- | --------------------------------------------- | ------------- |
+| Match 1X2     | Genomsnittliga odds för utfallet (t.ex. 3.20) | 0             |
+| Lag avancerar | Genomsnittliga avancemangodds för laget       | 0             |
+| Finallag      | Genomsnittliga odds för att nå finalen        | 0             |
+| VM-vinnare    | Genomsnittliga odds för att vinna             | 0             |
 
 Odds registreras av admin från t.ex. Unibet, Betsson, Bet365.
 Snittet beräknas automatiskt och fryses vid registreringstillfället.
@@ -205,12 +208,12 @@ Snittet beräknas automatiskt och fryses vid registreringstillfället.
 
 ## Tipslåsning
 
-| Kategori                    | Låses                              |
-|-----------------------------|------------------------------------|
-| Gruppspel 1X2 (72 matcher)  | 2 dagar innan turneringsstart      |
-| Avancemang per grupp        | 2 dagar innan turneringsstart      |
-| Finallag + VM-vinnare       | 2 dagar innan turneringsstart      |
-| Slutspelsmatcher 1X2        | 24 timmar innan respektive match   |
+| Kategori                   | Låses                            |
+| -------------------------- | -------------------------------- |
+| Gruppspel 1X2 (72 matcher) | 2 dagar innan turneringsstart    |
+| Avancemang per grupp       | 2 dagar innan turneringsstart    |
+| Finallag + VM-vinnare      | 2 dagar innan turneringsstart    |
+| Slutspelsmatcher 1X2       | 24 timmar innan respektive match |
 
 Slutspel 1X2 gäller resultatet efter 90 minuter.
 
@@ -230,16 +233,17 @@ Baserat på `Tipsy_Design_System.zip` (Claude Design).
 
 **Palett:**
 
-| Token            | Färg        | Användning                     |
-|------------------|-------------|--------------------------------|
-| `--cream`        | `#f2f0eb`   | Sidbackground                  |
-| `--coupon-bg`    | `#f4ecd8`   | Kupongbackground               |
-| `--green-deep`   | `#1E3932`   | Headers, navbar, mörka element |
-| `--green-cta`    | `#00754a`   | Knappar, CTA                   |
-| `--gold`         | `#cba258`   | Accenter, korrekta svar        |
-| `--stamp-red`    | `#9c2a1f`   | Fel svar, MISS-stämpel         |
+| Token          | Färg      | Användning                     |
+| -------------- | --------- | ------------------------------ |
+| `--cream`      | `#f2f0eb` | Sidbackground                  |
+| `--coupon-bg`  | `#f4ecd8` | Kupongbackground               |
+| `--green-deep` | `#1E3932` | Headers, navbar, mörka element |
+| `--green-cta`  | `#00754a` | Knappar, CTA                   |
+| `--gold`       | `#cba258` | Accenter, korrekta svar        |
+| `--stamp-red`  | `#9c2a1f` | Fel svar, MISS-stämpel         |
 
 **CSS-klasser:**
+
 - `.coupon` — kupong med perforerade kanter
 - `.coupon-head` — mörk header med guldlinje
 - `.match-row` — matchrad med 1/X/2-celler
@@ -253,26 +257,28 @@ Baserat på `Tipsy_Design_System.zip` (Claude Design).
 ## AWS-driftsättning
 
 ### Förutsättningar
+
 1. AWS-konto med RDS PostgreSQL + Amplify + SES
 2. GitHub-repo kopplat till Amplify
 3. `amplify.yml` finns i repot (kör `prisma migrate deploy` + `next build`)
 
 ### Miljövariabler i Amplify Console
 
-| Variabel              | Beskrivning                          |
-|-----------------------|--------------------------------------|
-| `DATABASE_URL`        | RDS connection string                |
-| `AUTH_SECRET`         | Slumpmässig sträng (32+ bytes)       |
-| `NEXTAUTH_SECRET`     | Samma värde som AUTH_SECRET          |
-| `NEXTAUTH_URL`        | Din Amplify-URL                      |
-| `EMAIL_SERVER_HOST`   | SES SMTP endpoint                    |
-| `EMAIL_SERVER_PORT`   | 587                                  |
-| `EMAIL_SERVER_SECURE` | false                                |
-| `EMAIL_SERVER_USER`   | SES SMTP IAM user                    |
-| `EMAIL_SERVER_PASSWORD` | SES SMTP password                  |
-| `EMAIL_FROM`          | Verifierad SES-avsändare             |
+| Variabel                | Beskrivning                    |
+| ----------------------- | ------------------------------ |
+| `DATABASE_URL`          | RDS connection string          |
+| `AUTH_SECRET`           | Slumpmässig sträng (32+ bytes) |
+| `NEXTAUTH_SECRET`       | Samma värde som AUTH_SECRET    |
+| `NEXTAUTH_URL`          | Din Amplify-URL                |
+| `EMAIL_SERVER_HOST`     | SES SMTP endpoint              |
+| `EMAIL_SERVER_PORT`     | 587                            |
+| `EMAIL_SERVER_SECURE`   | false                          |
+| `EMAIL_SERVER_USER`     | SES SMTP IAM user              |
+| `EMAIL_SERVER_PASSWORD` | SES SMTP password              |
+| `EMAIL_FROM`            | Verifierad SES-avsändare       |
 
 ### Första deploy
+
 ```bash
 # 1. Koppla GitHub-repo i Amplify Console
 # 2. Sätt alla env-variabler i Console

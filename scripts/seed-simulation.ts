@@ -195,7 +195,7 @@ const TEST_PASSWORD = "Test1234";
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function main() {
-  console.log("\n🌱 Tipsy — Simulation seed");
+  console.log("\n🌱 Tipsify — Simulation seed");
   console.log(
     `   Mode: ${DRY_RUN ? "DRY RUN" : RESET ? "RESET + SEED" : "SEED"}\n`,
   );

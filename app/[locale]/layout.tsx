@@ -66,7 +66,7 @@ export default async function LocaleLayout({
                     margin: 0,
                   }}
                 >
-                  Tipsy · VM 2026
+                  Tipsify · VM 2026
                 </p>
               </footer>
             </div>
