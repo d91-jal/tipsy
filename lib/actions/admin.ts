@@ -57,11 +57,13 @@ export async function setMatchResult(formData: FormData) {
 // GROUP ACTUAL ADVANCEMENT
 // ─────────────────────────────────────────────────────────────────────────────
 
-const groupAdvancementSchema = z.object({
-  groupId: z.string(),
-  firstTeamId: z.string(),
-  secondTeamId: z.string(),
-}).refine((d) => d.firstTeamId !== d.secondTeamId);
+const groupAdvancementSchema = z
+  .object({
+    groupId: z.string(),
+    firstTeamId: z.string(),
+    secondTeamId: z.string(),
+  })
+  .refine((d) => d.firstTeamId !== d.secondTeamId);
 
 export async function setGroupActualAdvancement(formData: FormData) {
   await requireAdmin();
@@ -88,19 +90,29 @@ export async function setGroupActualAdvancement(formData: FormData) {
   await scoreGroupAdvancementTips(groupId);
 
   revalidatePath("/[locale]/standings", "page");
-  revalidatePath("/[locale]/admin/results", "page");
+  revalidatePath("/[locale]/admin/advancement", "page");
+  revalidatePath("/[locale]/tips/advancement", "page");
 }
+
+export type AdvancementResult = {
+  processed: number;
+  skipped: number;
+  groups: { name: string; first: string; second: string }[];
+  errors: string[];
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TOURNAMENT ACTUAL RESULT
 // ─────────────────────────────────────────────────────────────────────────────
 
-const tournamentResultSchema = z.object({
-  tournamentId: z.string(),
-  finalist1Id: z.string(),
-  finalist2Id: z.string(),
-  winnerId: z.string(),
-}).refine((d) => d.finalist1Id !== d.finalist2Id)
+const tournamentResultSchema = z
+  .object({
+    tournamentId: z.string(),
+    finalist1Id: z.string(),
+    finalist2Id: z.string(),
+    winnerId: z.string(),
+  })
+  .refine((d) => d.finalist1Id !== d.finalist2Id)
   .refine((d) => [d.finalist1Id, d.finalist2Id].includes(d.winnerId));
 
 export async function setTournamentActualResult(formData: FormData) {
@@ -180,7 +192,7 @@ export async function setMatchOdds(formData: FormData) {
           recordedBy: admin.id,
         },
       });
-    })
+    }),
   );
 
   revalidatePath("/[locale]/admin/odds", "page");

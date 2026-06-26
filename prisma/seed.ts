@@ -48,8 +48,8 @@ async function main() {
     create: {
       tournamentId: tournament.id,
       slug: "wc2026-main",
-      name: "VM 2026 — Huvudtävling",
-      description: "Den officiella tippningsomgången för VM 2026",
+      name: "VM-tipset 2026",
+      description: "Må bästa tippare vinna!",
       isPublic: true,
       simulationMode: false,
       createdBy: admin.id,

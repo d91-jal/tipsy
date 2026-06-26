@@ -11,7 +11,8 @@ import { Link } from "@/i18n/routing";
 export default async function AdminCompetitionsPage() {
   const session = await auth();
   const locale = await getLocale();
-  if (!session?.user || session.user.role !== "ADMIN") redirect({ href: "/", locale });
+  if (!session?.user || session.user.role !== "ADMIN")
+    redirect({ href: "/", locale });
 
   const isSv = locale === "sv";
 
@@ -51,7 +52,9 @@ export default async function AdminCompetitionsPage() {
       <section className="space-y-3">
         <h2 className="text-lg font-semibold text-slate-700">
           {isSv ? "Alla tävlingar" : "All competitions"}{" "}
-          <span className="text-sm font-normal text-slate-400">({competitions.length})</span>
+          <span className="text-sm font-normal text-slate-400">
+            ({competitions.length})
+          </span>
         </h2>
 
         <div className="space-y-4">
@@ -59,20 +62,29 @@ export default async function AdminCompetitionsPage() {
             const realCount = comp.members.filter((m) => !m.isSimBot).length;
             const botCount = comp.members.filter((m) => m.isSimBot).length;
             return (
-              <div key={comp.id} className="rounded-xl border border-slate-200 bg-white p-4 space-y-3">
+              <div
+                key={comp.id}
+                className="rounded-xl border border-slate-200 bg-white p-4 space-y-3"
+              >
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-slate-800">{comp.name}</h3>
-                      {comp.simulationMode && <Badge variant="warning">🤖 Sim</Badge>}
+                      <h3 className="font-semibold text-slate-800">
+                        {comp.name}
+                      </h3>
+                      {comp.simulationMode && (
+                        <Badge variant="warning">🤖 Sim</Badge>
+                      )}
                       {!comp.isPublic && <Badge variant="muted">🔒</Badge>}
                     </div>
                     <p className="text-xs text-slate-400 mt-0.5">
-                      {isSv ? comp.tournament.nameSv : comp.tournament.nameEn} · slug: {comp.slug}
+                      {isSv ? comp.tournament.nameSv : comp.tournament.nameEn} ·
+                      slug: {comp.slug}
                     </p>
                     {comp.accessCode && (
                       <p className="text-xs text-amber-600 mt-0.5">
-                        {isSv ? "Kod:" : "Code:"} <code className="font-mono">{comp.accessCode}</code>
+                        {isSv ? "Kod:" : "Code:"}{" "}
+                        <code className="font-mono">{comp.accessCode}</code>
                       </p>
                     )}
                   </div>

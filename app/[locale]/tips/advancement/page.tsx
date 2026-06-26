@@ -62,7 +62,7 @@ export default async function AdvancementPage() {
           >
             {isSv ? "Avancemang." : "Advancement."}{" "}
             <span style={{ fontStyle: "italic", color: "var(--green)" }}>
-              {isSv ? "Vilka går vidare?" : "Who advances?"}
+              {isSv ? "Topp 2 per grupp?" : "Top 2 per group?"}
             </span>
           </h1>
         </div>
