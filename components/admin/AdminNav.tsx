@@ -11,6 +11,7 @@ export function AdminNav({ locale }: { locale: string }) {
   const tabs = [
     { href: "/admin/results"      as const, labelSv: "⚽ Resultat",    labelEn: "⚽ Results" },
     { href: "/admin/advancement"  as const, labelSv: "🥈 Avancemang",  labelEn: "🥈 Advancement" },
+    { href: "/admin/knockout"     as const, labelSv: "🏟️ Slutspel",    labelEn: "🏟️ Knockout" },
     { href: "/admin/odds"         as const, labelSv: "📊 Odds",        labelEn: "📊 Odds" },
     { href: "/admin/competitions" as const, labelSv: "🏆 Tävlingar",   labelEn: "🏆 Competitions" },
     { href: "/admin/simulate"     as const, labelSv: "🤖 Simulering",  labelEn: "🤖 Simulate" },

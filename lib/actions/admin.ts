@@ -142,44 +142,44 @@ export async function setTournamentActualResult(formData: FormData) {
 // MATCH ODDS
 // ─────────────────────────────────────────────────────────────────────────────
 
-const oddsEntrySchema = z.object({
-  value: z.coerce.number().min(1.01),
-  source: z.string().min(1),
-});
-
 const matchOddsSchema = z.object({
-  matchId: z.string(),
-  homeOdds: oddsEntrySchema,
-  drawOdds: oddsEntrySchema,
-  awayOdds: oddsEntrySchema,
-  // Sources must match across all three outcomes
+  matchId: z.string().min(1),
+  homeOdds: z.coerce.number().min(1.01),
+  drawOdds: z.coerce.number().min(1.01),
+  awayOdds: z.coerce.number().min(1.01),
+  source: z.string().min(1),
 });
 
 export async function setMatchOdds(formData: FormData) {
   const admin = await requireAdmin();
 
-  // Parse per-source odds from form: home_source_0, home_value_0, etc.
-  // For simplicity, we accept pre-averaged values from admin UI
-  const sources = JSON.parse(formData.get("sources") as string);
-  // sources = { HOME: [{name, value}, ...], DRAW: [...], AWAY: [...] }
+  const parsed = matchOddsSchema.safeParse({
+    matchId: formData.get("matchId"),
+    homeOdds: formData.get("homeOdds"),
+    drawOdds: formData.get("drawOdds"),
+    awayOdds: formData.get("awayOdds"),
+    source: formData.get("source"),
+  });
+  if (!parsed.success) throw new Error("INVALID_INPUT");
 
-  const matchId = formData.get("matchId") as string;
-  if (!matchId) throw new Error("INVALID_INPUT");
+  const { matchId, homeOdds, drawOdds, awayOdds, source } = parsed.data;
 
+  const byOutcome = {
+    HOME: homeOdds,
+    DRAW: drawOdds,
+    AWAY: awayOdds,
+  } as const;
   const outcomes = ["HOME", "DRAW", "AWAY"] as const;
 
   await prisma.$transaction(
     outcomes.map((outcome) => {
-      const entries: { name: string; value: number }[] = sources[outcome] ?? [];
-      const avg =
-        entries.length > 0
-          ? entries.reduce((s, e) => s + e.value, 0) / entries.length
-          : 0;
+      const value = byOutcome[outcome];
+      const entries = [{ name: source, value }];
 
       return prisma.matchOdds.upsert({
         where: { matchId_outcome: { matchId, outcome } },
         update: {
-          avgValue: avg,
+          avgValue: value,
           sources: entries,
           recordedAt: new Date(),
           recordedBy: admin.id,
@@ -187,7 +187,7 @@ export async function setMatchOdds(formData: FormData) {
         create: {
           matchId,
           outcome,
-          avgValue: avg,
+          avgValue: value,
           sources: entries,
           recordedBy: admin.id,
         },
@@ -196,6 +196,7 @@ export async function setMatchOdds(formData: FormData) {
   );
 
   revalidatePath("/[locale]/admin/odds", "page");
+  revalidatePath("/[locale]/admin/knockout", "page");
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -254,5 +255,6 @@ export async function setKnockoutMatchTeams(formData: FormData) {
   });
 
   revalidatePath("/[locale]/tips/knockout", "page");
+  revalidatePath("/[locale]/admin/knockout", "page");
   revalidatePath("/[locale]/admin/results", "page");
 }
