@@ -76,8 +76,8 @@ export default async function KnockoutPage() {
             {isSv ? "Slutspelet." : "Knockout."}{" "}
             <span style={{ fontStyle: "italic", color: "var(--green)" }}>
               {isSv
-                ? "Tippas 24h innan matchstart."
-                : "Closes 24h before game starts."}
+                ? "Stänger 1h innan matchstart."
+                : "Closes 1h before game starts."}
             </span>
           </h1>
         </div>
@@ -237,8 +237,8 @@ export default async function KnockoutPage() {
             }}
           >
             {isSv
-              ? "Tips stänger 24h innan match"
-              : "Tips close 24h before match"}
+              ? "Tips stänger 1h innan match"
+              : "Tips close 1h before match"}
           </div>
         </div>
       ))}

@@ -43,8 +43,8 @@ export function outcomeLabel(
 export function stageLabel(stage: string, locale = "sv"): string {
   const labels: Record<string, { sv: string; en: string }> = {
     GROUP: { sv: "Gruppspel", en: "Group Stage" },
-    ROUND_OF_32: { sv: "Omgång 32", en: "Round of 32" },
-    ROUND_OF_16: { sv: "Omgång 16", en: "Round of 16" },
+    ROUND_OF_32: { sv: "16-delsfinal", en: "Round of 32" },
+    ROUND_OF_16: { sv: "Åttondelsfinal", en: "Round of 16" },
     QUARTER_FINAL: { sv: "Kvartsfinal", en: "Quarter-final" },
     SEMI_FINAL: { sv: "Semifinal", en: "Semi-final" },
     THIRD_PLACE: { sv: "Bronsmatch", en: "Third place" },

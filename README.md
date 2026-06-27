@@ -10,7 +10,7 @@ genomsnittliga odds från kommersiella bettingsajter. Retro stryktipskupong-este
 - 🔐 Inloggning via e-post + lösenord eller magic link (lösenordsfri)
 - ⚽ Tips på 1X2 i gruppspel (72 matcher) — interaktiv kupong med bläckcirklar
 - 🏅 Tips på vilka lag som går vidare från varje grupp (12 grupper)
-- ⚔️ Tips på 1X2 i slutspel (32 matcher, låses 24h per match)
+- ⚔️ Tips på 1X2 i slutspel (32 matcher, låses 1h innan match)
 - 🏆 Tips på finallag och VM-vinnare
 - 📊 Topplista per tävling med poäng baserade på verkliga odds
 - 🏟️ Grupptabeller (V/O/F/GM-IM/MS/P) under tävlingsvy
