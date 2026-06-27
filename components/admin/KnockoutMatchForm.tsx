@@ -20,6 +20,7 @@ type KnockoutMatch = {
   id: string;
   matchNumber: number;
   stage: string;
+  scheduledAt: string;
   homeTeamId: string | null;
   awayTeamId: string | null;
   odds: MatchOdds[];
@@ -66,6 +67,17 @@ export function KnockoutMatchForm({
 
   const stageLabel =
     STAGE_LABELS[match.stage]?.[isSv ? "sv" : "en"] ?? match.stage;
+
+  const kickoff = new Date(match.scheduledAt).toLocaleString(
+    isSv ? "sv-SE" : "en-GB",
+    {
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    },
+  );
 
   function dirty() {
     setSaved(false);
@@ -183,7 +195,10 @@ export function KnockoutMatchForm({
             color: "var(--ink-faint)",
           }}
         >
-          #{match.matchNumber} · {stageLabel}
+          #{match.matchNumber} · {stageLabel} ·{" "}
+          <span style={{ fontWeight: 500, textTransform: "capitalize" }}>
+            {kickoff}
+          </span>
         </span>
         {complete && (
           <span

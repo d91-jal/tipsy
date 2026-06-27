@@ -171,6 +171,7 @@ export default async function AdminKnockoutPage() {
                     id: match.id,
                     matchNumber: match.matchNumber,
                     stage: match.stage,
+                    scheduledAt: match.scheduledAt.toISOString(),
                     homeTeamId: match.homeTeamId,
                     awayTeamId: match.awayTeamId,
                     odds: match.odds.map((o) => ({
