@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { cn } from "@/lib/utils";
+import { cn, stageLabel } from "@/lib/utils";
 
 type Member = {
   userId: string;
@@ -20,6 +20,7 @@ type Match = {
   id: string;
   matchNumber: number;
   scheduledAt: string;
+  stage: string;
   homeScore: number | null;
   awayScore: number | null;
   status: string;
@@ -60,6 +61,7 @@ type Props = {
   competition: { id: string; name: string; slug: string };
   members: Member[];
   groups: Group[];
+  knockoutMatches: Match[];
   tournamentTips: TournamentTip[];
   tournamentActual: TournamentActual;
   currentUserId: string;
@@ -67,7 +69,16 @@ type Props = {
   locale: string;
 };
 
-type Tab = "groups" | "advancement" | "tournament";
+type Tab = "groups" | "advancement" | "knockout" | "tournament";
+
+const KNOCKOUT_STAGES = [
+  "ROUND_OF_32",
+  "ROUND_OF_16",
+  "QUARTER_FINAL",
+  "SEMI_FINAL",
+  "THIRD_PLACE",
+  "FINAL",
+] as const;
 
 function outcomeLabel(o: "HOME" | "DRAW" | "AWAY") {
   return o === "HOME" ? "1" : o === "DRAW" ? "x" : "2";
@@ -163,6 +174,7 @@ export function CouponsView({
   competition,
   members,
   groups,
+  knockoutMatches,
   tournamentTips,
   tournamentActual,
   currentUserId,
@@ -183,8 +195,16 @@ export function CouponsView({
   const tabs: { key: Tab; label: string }[] = [
     { key: "groups", label: isSv ? "⚽ Gruppspel" : "⚽ Group Stage" },
     { key: "advancement", label: isSv ? "🏅 Avancemang" : "🏅 Advancement" },
+    { key: "knockout", label: isSv ? "⚔️ Slutspel" : "⚔️ Knockout" },
     { key: "tournament", label: isSv ? "🏆 Final" : "🏆 Final" },
   ];
+
+  // Knockout matches grouped by stage, in bracket order
+  const knockoutByStage = KNOCKOUT_STAGES.map((stage) => ({
+    stage,
+    label: stageLabel(stage, locale),
+    matches: knockoutMatches.filter((m) => m.stage === stage),
+  })).filter((s) => s.matches.length > 0);
 
   // Sticky column header style
   const stickyHead: React.CSSProperties = {
@@ -723,6 +743,203 @@ export function CouponsView({
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {/* ── KNOCKOUT ─────────────────────────────────────────────── */}
+      {tab === "knockout" && (
+        <div className="space-y-3">
+          {knockoutByStage.length === 0 && (
+            <div
+              style={{
+                padding: "48px 24px",
+                textAlign: "center",
+                fontFamily: "var(--f-mono)",
+                fontSize: 11,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: "var(--ink-faint)",
+                border: "1px dashed var(--hairline)",
+                borderRadius: "var(--r-card)",
+              }}
+            >
+              {isSv ? "Slutspelet börjar snart" : "Knockout stage coming soon"}
+            </div>
+          )}
+          {knockoutByStage.map(({ stage, label, matches }) => (
+            <div
+              key={stage}
+              style={{
+                borderRadius: "var(--r-card)",
+                overflow: "hidden",
+                boxShadow: "var(--sh-card)",
+              }}
+            >
+              {/* Stage header */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  padding: "12px 20px",
+                  background: "var(--green-deep)",
+                }}
+              >
+                <span
+                  style={{
+                    fontFamily: "var(--f-display)",
+                    fontWeight: 600,
+                    fontSize: 16,
+                    color: "var(--cream)",
+                  }}
+                >
+                  {label}
+                </span>
+              </div>
+
+              <div style={{ overflowX: "auto" }}>
+                <table
+                  style={{
+                    width: "100%",
+                    borderCollapse: "collapse",
+                    fontSize: 13,
+                  }}
+                >
+                  <thead>
+                    <tr>
+                      <th style={stickyHead}>{isSv ? "Match" : "Match"}</th>
+                      <th
+                        style={{
+                          ...stickyHead,
+                          left: "auto",
+                          position: "static",
+                          minWidth: 52,
+                        }}
+                      >
+                        {isSv ? "Facit" : "Result"}
+                      </th>
+                      {sortedMembers.map((m) => (
+                        <th key={m.userId} style={memberHead(m)}>
+                          <div
+                            style={{
+                              maxWidth: 60,
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
+                            {userName(m).split(" ")[0]}
+                          </div>
+                          {m.isSimBot && (
+                            <div style={{ fontSize: 8, opacity: 0.5 }}>🤖</div>
+                          )}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {matches.map((match, idx) => {
+                      const actual = actualOutcome(match);
+                      const finished = match.status === "FINISHED";
+                      const tipsByUser = Object.fromEntries(
+                        match.matchTips.map((t) => [t.userId, t]),
+                      );
+                      return (
+                        <tr
+                          key={match.id}
+                          style={{
+                            background: idx % 2 === 0 ? "#fff" : "var(--cream)",
+                            borderBottom: "1px solid var(--hairline)",
+                          }}
+                        >
+                          {/* Match name */}
+                          <td
+                            style={{
+                              padding: "9px 16px",
+                              position: "sticky",
+                              left: 0,
+                              background:
+                                idx % 2 === 0 ? "#fff" : "var(--cream)",
+                              borderRight: "2px solid var(--hairline)",
+                              zIndex: 1,
+                              minWidth: 180,
+                            }}
+                          >
+                            <div
+                              style={{
+                                fontFamily: "var(--f-serif)",
+                                fontWeight: 600,
+                                fontSize: 13,
+                                color: "var(--ink)",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {tn(match.homeTeam, locale)}
+                              <span
+                                style={{
+                                  color: "var(--ink-faint)",
+                                  fontStyle: "italic",
+                                  margin: "0 6px",
+                                }}
+                              >
+                                vs
+                              </span>
+                              {tn(match.awayTeam, locale)}
+                            </div>
+                            <div
+                              style={{
+                                fontFamily: "var(--f-mono)",
+                                fontSize: 9.5,
+                                color: "var(--ink-faint)",
+                                marginTop: 2,
+                              }}
+                            >
+                              #{match.matchNumber}
+                            </div>
+                          </td>
+
+                          {/* Actual result */}
+                          <td
+                            style={{
+                              padding: "9px 8px",
+                              textAlign: "center",
+                              borderRight: "2px solid var(--hairline)",
+                              minWidth: 52,
+                            }}
+                          >
+                            {finished ? (
+                              <div
+                                style={{
+                                  fontFamily: "var(--f-mono)",
+                                  fontWeight: 700,
+                                  fontSize: 13,
+                                  color: "var(--ink)",
+                                }}
+                              >
+                                {match.homeScore}–{match.awayScore}
+                              </div>
+                            ) : (
+                              <span style={{ color: "var(--hairline)" }}>—</span>
+                            )}
+                          </td>
+
+                          {/* Tips */}
+                          {sortedMembers.map((m) => (
+                            <TipCell
+                              key={m.userId}
+                              tip={tipsByUser[m.userId]}
+                              actual={actual}
+                              isMe={m.userId === currentUserId}
+                              finished={finished}
+                            />
+                          ))}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 

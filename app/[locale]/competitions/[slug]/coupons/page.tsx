@@ -89,6 +89,21 @@ export default async function CouponsPage({
     },
   });
 
+  // Fetch knockout matches (teams determined) with all visible members' tips
+  const knockoutMatches = await prisma.match.findMany({
+    where: {
+      tournamentId: competition.tournament.id,
+      stage: { not: "GROUP" },
+      homeTeamId: { not: null },
+    },
+    orderBy: { matchNumber: "asc" },
+    include: {
+      homeTeam: true,
+      awayTeam: true,
+      matchTips: { where: { userId: { in: visibleMemberIds } } },
+    },
+  });
+
   // Fetch tournament tips
   const tournamentTips = await prisma.tournamentTip.findMany({
     where: {
@@ -118,6 +133,10 @@ export default async function CouponsPage({
             ...m,
             scheduledAt: m.scheduledAt.toISOString(),
           })),
+        }))}
+        knockoutMatches={knockoutMatches.map((m) => ({
+          ...m,
+          scheduledAt: m.scheduledAt.toISOString(),
         }))}
         tournamentTips={tournamentTips}
         tournamentActual={tournamentActual}
