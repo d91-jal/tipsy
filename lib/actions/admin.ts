@@ -136,6 +136,8 @@ export async function setTournamentActualResult(formData: FormData) {
 
   await scoreTournamentTips(tournamentId);
   revalidatePath("/[locale]/standings", "page");
+  revalidatePath("/[locale]/admin/finals", "page");
+  revalidatePath("/[locale]/tips/tournament", "page");
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
