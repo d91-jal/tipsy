@@ -367,14 +367,14 @@ model GroupActualAdvancement {
 
 // Final result of tournament
 model TournamentActualResult {
-  id           String @id @default(cuid())
-  tournamentId String @unique
+  id           String  @id @default(cuid())
+  tournamentId String  @unique
   finalist1Id  String
   finalist2Id  String
-  winnerId     String
+  winnerId     String?
 
   tournament Tournament @relation(fields: [tournamentId], references: [id])
   finalist1  Team       @relation("ActualFinalist1", fields: [finalist1Id], references: [id])
   finalist2  Team       @relation("ActualFinalist2", fields: [finalist2Id], references: [id])
-  winner     Team       @relation("ActualWinner", fields: [winnerId], references: [id])
+  winner     Team?      @relation("ActualWinner", fields: [winnerId], references: [id])
 }

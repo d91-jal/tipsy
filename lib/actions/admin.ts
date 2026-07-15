@@ -110,10 +110,16 @@ const tournamentResultSchema = z
     tournamentId: z.string(),
     finalist1Id: z.string(),
     finalist2Id: z.string(),
-    winnerId: z.string(),
+    winnerId: z.preprocess(
+      (value) =>
+        typeof value === "string" && value.trim() === "" ? null : value,
+      z.string().nullable().optional(),
+    ),
   })
   .refine((d) => d.finalist1Id !== d.finalist2Id)
-  .refine((d) => [d.finalist1Id, d.finalist2Id].includes(d.winnerId));
+  .refine(
+    (d) => !d.winnerId || [d.finalist1Id, d.finalist2Id].includes(d.winnerId),
+  );
 
 export async function setTournamentActualResult(formData: FormData) {
   await requireAdmin();
@@ -127,11 +133,22 @@ export async function setTournamentActualResult(formData: FormData) {
   if (!parsed.success) throw new Error("INVALID_INPUT");
 
   const { tournamentId, finalist1Id, finalist2Id, winnerId } = parsed.data;
+  const shouldUpdateWinner = winnerId !== undefined;
+  const persistedWinnerId = winnerId ?? null;
 
   await prisma.tournamentActualResult.upsert({
     where: { tournamentId },
-    update: { finalist1Id, finalist2Id, winnerId },
-    create: { tournamentId, finalist1Id, finalist2Id, winnerId },
+    update: {
+      finalist1Id,
+      finalist2Id,
+      ...(shouldUpdateWinner ? { winnerId: persistedWinnerId } : {}),
+    },
+    create: {
+      tournamentId,
+      finalist1Id,
+      finalist2Id,
+      winnerId: persistedWinnerId,
+    },
   });
 
   await scoreTournamentTips(tournamentId);

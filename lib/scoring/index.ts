@@ -130,11 +130,14 @@ export async function scoreTournamentTips(tournamentId: string): Promise<void> {
   }
 
   const actualFinalistIds = new Set([actual.finalist1Id, actual.finalist2Id]);
+  const teamIdsToLoad = [actual.finalist1Id, actual.finalist2Id].concat(
+    actual.winnerId ? [actual.winnerId] : [],
+  );
 
   // Fetch odds for all involved teams
   const oddsRecords = await prisma.tournamentOdds.findMany({
     where: {
-      teamId: { in: [actual.finalist1Id, actual.finalist2Id, actual.winnerId] },
+      teamId: { in: teamIdsToLoad },
     },
   });
 
@@ -155,7 +158,7 @@ export async function scoreTournamentTips(tournamentId: string): Promise<void> {
       if (actualFinalistIds.has(tip.finalist2Id)) {
         points += reachFinalOdds.get(tip.finalist2Id) ?? 0;
       }
-      if (tip.winnerId === actual.winnerId) {
+      if (actual.winnerId && tip.winnerId === actual.winnerId) {
         points += winOdds.get(actual.winnerId) ?? 0;
       }
       return prisma.tournamentTip.update({

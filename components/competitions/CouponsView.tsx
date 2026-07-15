@@ -54,7 +54,7 @@ type TournamentTip = {
 type TournamentActual = {
   finalist1: Team;
   finalist2: Team;
-  winner: Team;
+  winner: Team | null;
 } | null;
 
 type Props = {
@@ -918,7 +918,9 @@ export function CouponsView({
                                 {match.homeScore}–{match.awayScore}
                               </div>
                             ) : (
-                              <span style={{ color: "var(--hairline)" }}>—</span>
+                              <span style={{ color: "var(--hairline)" }}>
+                                —
+                              </span>
                             )}
                           </td>
 
@@ -1035,7 +1037,7 @@ export function CouponsView({
                             }}
                           >
                             {isWinner
-                              ? tournamentActual.winner.fifaCode
+                              ? (tournamentActual.winner?.fifaCode ?? "—")
                               : `${tournamentActual.finalist1.fifaCode} / ${tournamentActual.finalist2.fifaCode}`}
                           </div>
                         ) : (
@@ -1067,9 +1069,13 @@ export function CouponsView({
                           );
 
                         if (isWinner) {
-                          const correct =
-                            tournamentActual?.winner.id === tip.winner.id;
-                          const wrong = tournamentActual && !correct;
+                          const correct = Boolean(
+                            tournamentActual?.winner &&
+                            tournamentActual.winner.id === tip.winner.id,
+                          );
+                          const wrong = Boolean(
+                            tournamentActual?.winner && !correct,
+                          );
                           return (
                             <td
                               key={m.userId}

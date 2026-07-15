@@ -34,12 +34,7 @@ export function TournamentFinalsForm({
   const [saved, setSaved] = useState(Boolean(existingResult));
   const [isPending, startTransition] = useTransition();
 
-  const isValid =
-    finalist1Id &&
-    finalist2Id &&
-    finalist1Id !== finalist2Id &&
-    winnerId &&
-    [finalist1Id, finalist2Id].includes(winnerId);
+  const isValid = finalist1Id && finalist2Id && finalist1Id !== finalist2Id;
 
   function handleChange(next: string, setter: (value: string) => void) {
     setSaved(false);
@@ -68,14 +63,12 @@ export function TournamentFinalsForm({
           {locale === "sv" ? "Slutspel" : "Final stage"}
         </p>
         <h2 className="text-lg font-semibold text-slate-800">
-          {locale === "sv"
-            ? "Ställ in finalister och vinnare"
-            : "Set finalists and winner"}
+          {locale === "sv" ? "Ställ in finalister" : "Set finalists"}
         </h2>
         <p className="text-sm text-slate-600">
           {locale === "sv"
-            ? "Välj de två lag som når finalen och det lag som vinner turneringen."
-            : "Choose the two teams that reach the final and the team that wins the tournament."}
+            ? "Välj de två lag som når finalen. Du kan spara dem nu och lägga till vinnaren senare."
+            : "Choose the two teams that reach the final. You can save them now and add the winner later."}
         </p>
       </div>
 
@@ -124,7 +117,7 @@ export function TournamentFinalsForm({
 
         <label className="space-y-2 text-sm text-slate-700">
           <span className="font-medium">
-            {locale === "sv" ? "Vinnare" : "Winner"}
+            {locale === "sv" ? "Vinnare (valfri)" : "Winner (optional)"}
           </span>
           <select
             value={winnerId}
@@ -150,8 +143,8 @@ export function TournamentFinalsForm({
       {!isValid && (
         <p className="text-sm text-amber-700">
           {locale === "sv"
-            ? "Välj två olika finalister och välj en vinnare som är en av dem."
-            : "Choose two different finalists and select a winner who is one of them."}
+            ? "Välj två olika finalister för att spara."
+            : "Choose two different finalists to save."}
         </p>
       )}
 
