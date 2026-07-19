@@ -69,7 +69,10 @@ export default async function CouponsPage({
     where: { tournamentId: competition.tournament.id },
     orderBy: { name: "asc" },
     include: {
-      teams: { orderBy: { nameEn: "asc" } },
+      teams: {
+        orderBy: { nameEn: "asc" },
+        include: { tournamentOdds: true },
+      },
       matches: {
         where: { stage: "GROUP" },
         orderBy: { matchNumber: "asc" },

@@ -10,7 +10,13 @@ type Member = {
   isSimBot: boolean;
   user: { id: string; name: string | null; email: string };
 };
-type Team = { id: string; nameSv: string; nameEn: string; fifaCode: string };
+type Team = {
+  id: string;
+  nameSv: string;
+  nameEn: string;
+  fifaCode: string;
+  tournamentOdds?: { type: string; avgValue: number }[];
+};
 type MatchTip = {
   userId: string;
   prediction: "HOME" | "DRAW" | "AWAY";
@@ -1142,31 +1148,50 @@ export function CouponsView({
                               {[
                                 { team: tip.finalist1, correct: f1correct },
                                 { team: tip.finalist2, correct: f2correct },
-                              ].map(({ team, correct }) => (
-                                <span
-                                  key={team.id}
-                                  style={{
-                                    fontFamily: "var(--f-mono)",
-                                    fontSize: 9.5,
-                                    padding: "2px 5px",
-                                    borderRadius: 3,
-                                    background:
-                                      correct === true
-                                        ? "var(--gold)"
-                                        : correct === false && actualFinalistIds
-                                          ? "rgba(156,42,31,0.08)"
-                                          : "var(--cream)",
-                                    color:
-                                      correct === true
-                                        ? "var(--green-deep)"
-                                        : correct === false && actualFinalistIds
-                                          ? "var(--stamp-red)"
-                                          : "var(--ink-soft)",
-                                  }}
-                                >
-                                  {team.fifaCode}
-                                </span>
-                              ))}
+                              ].map(({ team, correct }) => {
+                                const reachFinalOdds =
+                                  team.tournamentOdds?.find(
+                                    (o) => o.type === "REACH_FINAL",
+                                  )?.avgValue;
+                                const showPoints =
+                                  correct === true && reachFinalOdds != null;
+
+                                return (
+                                  <span
+                                    key={team.id}
+                                    style={{
+                                      display: "inline-flex",
+                                      alignItems: "center",
+                                      gap: 6,
+                                      fontFamily: "var(--f-mono)",
+                                      fontSize: 9.5,
+                                      padding: "2px 5px",
+                                      borderRadius: 3,
+                                      background:
+                                        correct === true
+                                          ? "var(--gold)"
+                                          : correct === false &&
+                                              actualFinalistIds
+                                            ? "rgba(156,42,31,0.08)"
+                                            : "var(--cream)",
+                                      color:
+                                        correct === true
+                                          ? "var(--green-deep)"
+                                          : correct === false &&
+                                              actualFinalistIds
+                                            ? "var(--stamp-red)"
+                                            : "var(--ink-soft)",
+                                    }}
+                                  >
+                                    <span>{team.fifaCode}</span>
+                                    {showPoints && (
+                                      <span style={{ opacity: 0.8 }}>
+                                        +{Number(reachFinalOdds).toFixed(2)}
+                                      </span>
+                                    )}
+                                  </span>
+                                );
+                              })}
                             </div>
                           </td>
                         );
